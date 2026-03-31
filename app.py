@@ -25,11 +25,14 @@ app.config.update(
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/stockflow")
 MAX_RETRIES = 3
 
+import certifi
+ca = certifi.where()
+
 def get_db():
     """Get database connection with retry logic."""
     for attempt in range(MAX_RETRIES):
         try:
-            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsCAFile=ca)
             client.server_info()  # Test connection
             return client["stockflow"]
         except Exception as e:
