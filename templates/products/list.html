@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold">Products</h1>
+    <a href="/products/create" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Product</a>
+</div>
+
+{% if products %}
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="w-full">
+            <thead class="bg-gray-100 border-b">
+                <tr>
+                    <th class="px-4 py-3 text-left font-medium">Name</th>
+                    <th class="px-4 py-3 text-left font-medium">SKU</th>
+                    <th class="px-4 py-3 text-left font-medium">Qty</th>
+                    <th class="px-4 py-3 text-left font-medium">Sell Price</th>
+                    <th class="px-4 py-3 text-left font-medium">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-3">{{ product.name }}</td>
+                        <td class="px-4 py-3">{{ product.sku }}</td>
+                        <td class="px-4 py-3">{{ product.quantity_on_hand }}</td>
+                        <td class="px-4 py-3">${{ "%.2f"|format(product.selling_price) if product.selling_price else "-" }}</td>
+                        <td class="px-4 py-3 space-x-2">
+                            <a href="/products/{{ product._id }}/edit" class="text-blue-600 hover:underline">Edit</a>
+                            <form method="POST" action="/products/{{ product._id }}/delete" style="display:inline;">
+                                <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Delete?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="bg-white p-8 rounded-lg shadow text-center">
+        <p class="text-gray-500">No products yet. <a href="/products/create" class="text-blue-600 hover:underline">Create one</a></p>
+    </div>
+{% endif %}
+{% endblock %}
