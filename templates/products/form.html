@@ -1,126 +1,53 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Edit' if product else 'Add' }} Product{% endblock %}
+
+{% block title %}{{ 'Edit' if edit else 'Add' }} Product{% endblock %}
 
 {% block content %}
-<div class="mb-8">
-    <a href="/products/" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-primary transition-colors mb-4 group">
-        <svg class="w-4 h-4 mr-1 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        Back to Inventory
-    </a>
-    <h1 class="text-3xl font-display font-bold text-slate-900 dark:text-white">{{ 'Edit Product' if product else 'Add New Product' }}</h1>
-    <p class="text-slate-500 dark:text-slate-400 mt-1">{% if product %}Update details for {{ product.name }}{% else %}Track a new item in your inventory catalogue.{% endif %}</p>
-</div>
-
-<div class="glass-card max-w-2xl animate-fade-in" style="animation-delay: 0.1s;">
-    <div class="p-6 md:p-8">
-        <form method="POST" id="productForm" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Column 1 -->
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Product Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" id="name" value="{{ product.name if product else '' }}" class="input-field shadow-sm" placeholder="e.g., Premium Widget Pro" required>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Description <span class="text-slate-400 font-normal">(Optional)</span></label>
-                        <textarea name="description" rows="3" class="input-field shadow-sm resize-none" placeholder="Add details about this product...">{{ product.description if product else '' }}</textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            Low Stock Threshold
-                            <span class="inline-flex ml-1 text-slate-400" title="Alerts will trigger when stock drops below this number.">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </span>
-                        </label>
-                        <input type="number" name="low_stock_threshold" value="{{ product.low_stock_threshold if product else '5' }}" class="input-field shadow-sm" placeholder="5" min="0">
-                    </div>
-                </div>
-
-                <!-- Column 2 -->
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">SKU (Stock ID) <span class="text-danger">*</span></label>
-                        <div class="relative">
-                            <input type="text" name="sku" id="sku" value="{{ product.sku if product else '' }}" class="input-field shadow-sm font-mono pl-10" placeholder="WGT-001" required>
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Quantity on Hand <span class="text-danger">*</span></label>
-                        <div class="relative">
-                            <input type="number" name="quantity_on_hand" value="{{ product.quantity_on_hand if product else '0' }}" class="input-field shadow-sm pl-10 text-lg font-semibold" placeholder="0" min="0" required>
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Cost Price</label>
-                            <div class="relative">
-                                <input type="number" step="0.01" name="cost_price" value="{{ product.cost_price if product else '' }}" class="input-field shadow-sm pl-8" placeholder="0.00">
-                                <strong class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-medium">$</strong>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Selling Price</label>
-                            <div class="relative">
-                                <input type="number" step="0.01" name="selling_price" value="{{ product.selling_price if product else '' }}" class="input-field shadow-sm pl-8" placeholder="0.00">
-                                <strong class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-medium">$</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-6 mt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div>
-                    {% if product %}
-                    <button type="button" onclick="confirmDelete('{{ product._id }}')" class="btn hover:bg-danger/10 text-danger px-4">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        Delete Product
-                    </button>
-                    {% endif %}
-                </div>
-                <div class="flex gap-3">
-                    <a href="/products/" class="btn btn-outline shadow-sm bg-white dark:bg-slate-800">Cancel</a>
-                    <button type="submit" class="btn btn-primary px-8 shadow-sm hover:shadow-primary/30">Save Product</button>
-                </div>
-            </div>
-        </form>
+<div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">{{ 'Edit' if edit else 'Add' }} Product</h1>
+        <a href="/products/" class="text-gray-600 hover:underline">Back to List</a>
     </div>
-</div>
-
-{% if product %}
-<!-- Hidden delete form for POST request -->
-<form id="delete-form-{{ product._id }}" action="/products/{{ product._id }}/delete" method="POST" class="hidden"></form>
-
-<script>
-    function confirmDelete(id) {
-        window.openModal(
-            'Delete Product?',
-            '<p class="text-slate-600 dark:text-slate-300">Are you sure you want to permanently delete this product? This action cannot be undone and will remove it from all analytics.</p>',
-            [
-                { label: 'Cancel', onclick: (closeFn) => closeFn(), type: 'outline bg-white dark:bg-cardbg dark:border-slate-700 dark:text-slate-200', class: 'mr-2' },
-                { label: 'Yes, delete permanently', onclick: () => document.getElementById(`delete-form-${id}`).submit(), type: 'primary bg-danger hover:bg-danger/90 ring-danger border-danger shadow-danger/20' }
-            ]
-        );
-    }
-</script>
-{% endif %}
-
-<script>
-    // Real-time Input Validation Visuals
-    const nameInput = document.getElementById('name');
-    const skuInput = document.getElementById('sku');
     
-    validateInput(nameInput, null, val => val.trim().length > 0, "Name is required");
-    validateInput(skuInput, null, val => val.trim().length > 0 && /^[a-zA-Z0-9-_]+$/.test(val), "Invalid SKU format");
-</script>
+    {% if errors %}
+        {% for error in errors %}
+            <div class="bg-red-100 text-red-800 p-2 rounded mb-4 text-sm">{{ error }}</div>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="POST" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Product Name</label>
+                <input type="text" name="name" value="{{ product.name if product else '' }}" class="w-full px-3 py-2 border border-gray-300 rounded" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">SKU</label>
+                <input type="text" name="sku" value="{{ product.sku if product else '' }}" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50" {{ 'readonly' if edit else 'required' }}>
+                {% if edit %}<p class="text-xs text-gray-500 mt-1">SKU cannot be changed.</p>{% endif %}
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Quantity on Hand</label>
+                <input type="number" name="quantity" value="{{ product.quantity_on_hand if product else '0' }}" class="w-full px-3 py-2 border border-gray-300 rounded" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Selling Price ($)</label>
+                <input type="number" step="0.01" name="selling_price" value="{{ product.selling_price if product and product.selling_price else '' }}" class="w-full px-3 py-2 border border-gray-300 rounded">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Low Stock Threshold</label>
+                <input type="number" name="low_stock_threshold" value="{{ product.low_stock_threshold if product and product.low_stock_threshold else '' }}" placeholder="Org Default" class="w-full px-3 py-2 border border-gray-300 rounded">
+            </div>
+        </div>
+        
+        <div class="pt-4 border-t">
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                {{ 'Save Changes' if edit else 'Create Product' }}
+            </button>
+        </div>
+    </form>
+</div>
 {% endblock %}

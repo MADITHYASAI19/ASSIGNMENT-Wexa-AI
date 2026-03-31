@@ -1,324 +1,46 @@
 {% extends "base.html" %}
+
 {% block title %}Products{% endblock %}
 
 {% block content %}
-<!-- Header -->
-<div class="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-slate-800">
-    <div>
-        <h1 class="text-3xl font-display font-bold text-slate-900 dark:text-white mb-1">Products Directory</h1>
-        <p class="text-slate-500 dark:text-slate-400">Manage your comprehensive inventory catalog with real-time sync.</p>
-    </div>
-    <div class="mt-4 md:mt-0 flex gap-3">
-        <button onclick="showToast('Bulk CSV processing is available in the Pro tier.', 'info')" class="btn btn-outline bg-white dark:bg-cardbg text-slate-700 dark:text-slate-300 shadow-sm border-slate-200 dark:border-slate-700">
-            <svg class="w-5 h-5 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path></svg>
-            Import CSV
-        </button>
-        <a href="/products/create" class="btn btn-primary shadow-sm hover:shadow-primary/30">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            New Product
-        </a>
-    </div>
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold">Products</h1>
+    <a href="/products/create" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Product</a>
 </div>
 
-<!-- Search & Filters Toolbar -->
-<div class="glass-card mb-6 sticky top-0 z-10 animate-fade-in" style="animation-delay: 0.1s;">
-    <div class="p-4 flex flex-col md:flex-row gap-4">
-        <!-- Search Bar -->
-        <div class="flex-1 relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
-            <input type="text" id="search-input" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Search by name or SKU...">
-        </div>
-        
-        <!-- Filters -->
-        <div class="flex gap-2">
-            <select id="status-filter" class="px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm cursor-pointer outline-none focus:ring-2 focus:ring-primary text-slate-700 dark:text-slate-300">
-                <option value="all">Status: All</option>
-                <option value="normal">Normal</option>
-                <option value="low">Low Stock</option>
-                <option value="critical">Critical (0)</option>
-            </select>
-            <button onclick="document.getElementById('search-input').value=''; document.getElementById('status-filter').value='all'; filterProducts();" class="p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" title="Clear Filters">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Products Table Context -->
-<div class="glass-card overflow-hidden relative animate-fade-in" style="animation-delay: 0.2s;">
-    {% if products %}
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm whitespace-nowrap" id="products-table">
-            <thead class="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 uppercase font-semibold text-xs border-b border-slate-200 dark:border-slate-700">
+{% if products %}
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="w-full">
+            <thead class="bg-gray-100 border-b">
                 <tr>
-                    <th class="px-6 py-4 w-10">
-                        <input type="checkbox" id="select-all" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer bg-white dark:bg-slate-900">
-                    </th>
-                    <th class="px-6 py-4">Product Details</th>
-                    <th class="px-6 py-4">SKU</th>
-                    <th class="px-6 py-4 text-center">Quantities</th>
-                    <th class="px-6 py-4 text-right">Price</th>
-                    <th class="px-6 py-4 text-center">Badges</th>
-                    <th class="px-6 py-4 text-right">Settings</th>
+                    <th class="px-4 py-3 text-left font-medium">Name</th>
+                    <th class="px-4 py-3 text-left font-medium">SKU</th>
+                    <th class="px-4 py-3 text-left font-medium">Qty</th>
+                    <th class="px-4 py-3 text-left font-medium">Sell Price</th>
+                    <th class="px-4 py-3 text-left font-medium">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200 dark:divide-slate-800/80">
-                {% for item in products %}
-                <tr class="product-row hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group" 
-                    data-name="{{ item.name|lower }}" 
-                    data-sku="{{ item.sku|lower }}" 
-                    data-id="{{ item._id }}"
-                    data-status="{% if item.quantity_on_hand == 0 %}critical{% elif item.quantity_on_hand <= (item.low_stock_threshold or 5) %}low{% else %}normal{% endif %}">
-                    
-                    <td class="px-6 py-5">
-                        <input type="checkbox" class="row-checkbox h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer bg-white dark:bg-slate-900" onchange="toggleBulkActions()">
-                    </td>
-                    
-                    <td class="px-6 py-5">
-                        <div class="flex flex-col">
-                            <a href="/products/{{ item._id }}/edit" class="font-display font-semibold text-primary dark:text-white hover:text-secondary hover:underline transition-colors search-target">{{ item.name }}</a>
-                            <span class="text-xs text-slate-500 mt-0.5 truncate max-w-[200px]">{{ item.description or 'No description' }}</span>
-                        </div>
-                    </td>
-                    
-                    <td class="px-6 py-5">
-                        <div class="flex items-center gap-2 group/sku">
-                            <span class="font-mono text-slate-600 dark:text-slate-400 py-1 px-2 bg-slate-100 dark:bg-slate-800 rounded text-xs search-target">{{ item.sku }}</span>
-                            <button onclick="navigator.clipboard.writeText('{{ item.sku }}'); showToast('COPIED SKU', 'success', 1500)" class="text-slate-400 hover:text-primary opacity-0 group-hover/sku:opacity-100 transition-opacity" title="Copy">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                            </button>
-                        </div>
-                    </td>
-                    
-                    <td class="px-6 py-5 text-center">
-                        <div class="inline-flex items-center justify-center p-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                            <button onclick="adjustStock('{{ item._id }}', -1)" class="w-6 h-6 rounded flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 text-slate-500 hover:text-danger dark:hover:text-white transition-colors shadow-sm">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4"></path></svg>
-                            </button>
-                            <span class="qty-display w-10 text-center font-bold text-slate-900 dark:text-white" id="qty-{{ item._id }}">{{ item.quantity_on_hand }}</span>
-                            <button onclick="adjustStock('{{ item._id }}', 1)" class="w-6 h-6 rounded flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 text-slate-500 hover:text-accent dark:hover:text-white transition-colors shadow-sm">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
-                            </button>
-                        </div>
-                    </td>
-                    
-                    <td class="px-6 py-5 text-right font-medium text-slate-700 dark:text-slate-300">
-                        {% if item.selling_price %}
-                            ${{ "%.2f"|format(item.selling_price|float) }}
-                        {% else %}
-                            <span class="text-slate-400 font-normal">-</span>
-                        {% endif %}
-                    </td>
-                    
-                    <td class="px-6 py-5 text-center">
-                        <div id="badge-{{ item._id }}">
-                            {% if item.quantity_on_hand == 0 %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-danger/10 text-danger border border-danger/20">Critical</span>
-                            {% elif item.quantity_on_hand <= (item.low_stock_threshold or 5) %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">Low</span>
-                            {% else %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent/10 text-accent border border-accent/20">Normal</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                    
-                    <td class="px-6 py-5 text-right">
-                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <a href="/products/{{ item._id }}/edit" class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            </a>
-                            <button onclick="confirmDelete('{{ item._id }}')" class="p-2 text-slate-400 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                        <!-- Hidden Form for isolated delete button inside row loop -->
-                        <form id="delete-form-{{ item._id }}" action="/products/{{ item._id }}/delete" method="POST" class="hidden"></form>
-                    </td>
-                </tr>
+            <tbody>
+                {% for product in products %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-3">{{ product.name }}</td>
+                        <td class="px-4 py-3">{{ product.sku }}</td>
+                        <td class="px-4 py-3">{{ product.quantity_on_hand }}</td>
+                        <td class="px-4 py-3">${{ "%.2f"|format(product.selling_price) if product.selling_price else "-" }}</td>
+                        <td class="px-4 py-3 space-x-2">
+                            <a href="/products/{{ product._id }}/edit" class="text-blue-600 hover:underline">Edit</a>
+                            <form method="POST" action="/products/{{ product._id }}/delete" style="display:inline;">
+                                <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Delete?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    
-    <!-- Bulk Actions Panel (Hidden by default) -->
-    <div id="bulk-actions" class="absolute bottom-0 left-0 right-0 p-4 bg-slate-800 text-white transform translate-y-full transition-transform duration-300 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <span class="flex h-6 w-6 rounded-full bg-primary items-center justify-center text-xs font-bold" id="bulk-count">0</span>
-            <span class="font-medium">Items Selected</span>
-        </div>
-        <div class="flex gap-2">
-            <button class="btn border border-white/20 hover:bg-white/10" onclick="showToast('Bulk update quantity coming soon.', 'warning')">Adjust Quantities</button>
-            <button class="btn bg-danger/90 hover:bg-danger" onclick="showToast('Bulk deleting requires confirmation workflow.', 'error')">Delete All</button>
-            <button class="p-2 ml-2 text-slate-400 hover:text-white transition" onclick="document.getElementById('select-all').click()">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
+{% else %}
+    <div class="bg-white p-8 rounded-lg shadow text-center">
+        <p class="text-gray-500">No products yet. <a href="/products/create" class="text-blue-600 hover:underline">Create one</a></p>
     </div>
-    {% else %}
-    <!-- Empty State -->
-    <div class="px-6 py-20 text-center animate-fade-in" style="animation-delay: 0.3s;">
-        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-slate-50 dark:bg-slate-800/50 mb-6">
-            <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-        </div>
-        <h3 class="text-2xl font-display font-medium text-slate-900 dark:text-white">Your inventory is empty</h3>
-        <p class="text-slate-500 dark:text-slate-400 mt-2 mb-8 max-w-sm mx-auto">Get started by creating your first product or bulk importing a CSV catalog.</p>
-        <a href="/products/create" class="btn btn-primary px-8 py-3 text-base shadow-lg shadow-primary/20 hover:shadow-primary/40">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Create Your First Product
-        </a>
-    </div>
-    {% endif %}
-</div>
-
-<script>
-    // Real-Time Search & Filtering Logic
-    const searchInput = document.getElementById('search-input');
-    const statusFilter = document.getElementById('status-filter');
-    const rows = document.querySelectorAll('.product-row');
-    
-    function debounce(fn, ms) {
-        let timer;
-        return function(...args) {
-            clearTimeout(timer);
-            timer = setTimeout(() => fn.apply(this, args), ms);
-        };
-    }
-
-    function filterProducts() {
-        if(!searchInput) return;
-        const query = searchInput.value.toLowerCase().trim();
-        const status = statusFilter.value;
-        
-        rows.forEach(row => {
-            const name = row.dataset.name;
-            const sku = row.dataset.sku;
-            const rStatus = row.dataset.status;
-            
-            const matchSearch = query === '' || name.includes(query) || sku.includes(query);
-            const matchStatus = status === 'all' || rStatus === status;
-            
-            if (matchSearch && matchStatus) {
-                row.style.display = '';
-                // Handle highlighting
-                const targets = row.querySelectorAll('.search-target');
-                targets.forEach(t => {
-                    const originalRaw = t.getAttribute('data-raw') || t.textContent;
-                    if (!t.getAttribute('data-raw')) t.setAttribute('data-raw', originalRaw);
-                    
-                    if (query) {
-                        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-                        t.innerHTML = originalRaw.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800 text-inherit">$1</mark>');
-                    } else {
-                        t.textContent = originalRaw;
-                    }
-                });
-            } else {
-                row.style.display = 'none';
-                const cb = row.querySelector('.row-checkbox');
-                if (cb.checked) {
-                    cb.checked = false;
-                    toggleBulkActions();
-                }
-            }
-        });
-    }
-
-    if(searchInput) searchInput.addEventListener('input', debounce(filterProducts, 300));
-    if(statusFilter) statusFilter.addEventListener('change', filterProducts);
-
-    // Bulk Action Logic
-    const selectAll = document.getElementById('select-all');
-    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-    const bulkPanel = document.getElementById('bulk-actions');
-    const bulkCount = document.getElementById('bulk-count');
-
-    if(selectAll) {
-        selectAll.addEventListener('change', (e) => {
-            rows.forEach(row => {
-                if (row.style.display !== 'none') {
-                    row.querySelector('.row-checkbox').checked = e.target.checked;
-                }
-            });
-            toggleBulkActions();
-        });
-    }
-
-    function toggleBulkActions() {
-        let count = 0;
-        rowCheckboxes.forEach(cb => { if(cb.checked) count++; });
-        bulkCount.innerText = count;
-        
-        if (count > 0) {
-            bulkPanel.classList.remove('translate-y-full');
-        } else {
-            bulkPanel.classList.add('translate-y-full');
-            if(selectAll) selectAll.checked = false;
-        }
-    }
-
-    // Real-Time Stock Adjustment logic (optimistic update + fetch)
-    function adjustStock(productId, delta) {
-        const qtyEl = document.getElementById(`qty-${productId}`);
-        const badgeContainer = document.getElementById(`badge-${productId}`);
-        const row = badgeContainer.closest('.product-row');
-        
-        const oldQty = parseInt(qtyEl.textContent);
-        const newQty = Math.max(0, oldQty + delta);
-        const threshold = 5; // Hardcoded default for mockup, could read from data attrs
-        
-        // Optimistic toggle
-        qtyEl.textContent = newQty;
-        qtyEl.style.opacity = '0.5';
-        
-        // Update badge dynamically for realism
-        if (newQty === 0) {
-            badgeContainer.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-danger/10 text-danger border border-danger/20">Critical</span>';
-            row.dataset.status = 'critical';
-        } else if (newQty <= threshold) {
-            badgeContainer.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">Low</span>';
-            row.dataset.status = 'low';
-        } else {
-            badgeContainer.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent/10 text-accent border border-accent/20">Normal</span>';
-            row.dataset.status = 'normal';
-        }
-
-        // Fire API Event
-        fetch(`/products/${productId}/adjust`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ delta })
-        })
-        .then(r => r.json())
-        .then(data => {
-            qtyEl.style.opacity = '1';
-            if (data.success) {
-                showToast(`${data.product_name} quantity updated!`, 'success');
-                // Pulse animation manually
-                qtyEl.classList.add('text-accent', 'scale-110');
-                setTimeout(() => qtyEl.classList.remove('text-accent', 'scale-110', 'transition-all'), 300);
-            } else {
-                qtyEl.textContent = oldQty;
-                showToast('Error updating stock: ' + data.error, 'error');
-            }
-        })
-        .catch(() => {
-            qtyEl.textContent = oldQty;
-            qtyEl.style.opacity = '1';
-            showToast('Network error updating stock', 'error');
-        });
-    }
-
-    function confirmDelete(id) {
-        window.openModal(
-            'Delete Product?',
-            '<p class="text-slate-600 dark:text-slate-300">Are you sure you want to permanently delete this product? This action cannot be undone.</p>',
-            [
-                { label: 'Cancel', onclick: (closeFn) => closeFn(), type: 'outline bg-white dark:bg-cardbg dark:border-slate-700 dark:text-slate-200', class: 'mr-2' },
-                { label: 'Yes, delete', onclick: () => document.getElementById(`delete-form-${id}`).submit(), type: 'primary bg-danger hover:bg-danger/90 ring-danger border-danger shadow-danger/20' }
-            ]
-        );
-    }
-</script>
+{% endif %}
 {% endblock %}

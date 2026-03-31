@@ -1,329 +1,39 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockFlow Premium | {% block title %}{% endblock %}</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Scripts -->
+    <title>StockFlow {% block title %}{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Tailwind Config & Dark Mode Script -->
-    <script>
-        // Dark Mode Logic (in head to prevent flash)
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const savedTheme = localStorage.getItem('theme') || (prefersDark ? 'dark' : 'light');
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-
-        // Listen for system changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem('theme')) {
-                document.documentElement.classList.toggle('dark', e.matches);
-            }
-        });
-
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Sora', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        primary: '#1E40AF',
-                        secondary: '#7C3AED',
-                        accent: '#059669',
-                        danger: '#E11D48',
-                        darkbg: '#0F172A',
-                        cardbg: '#1E293B',
-                    },
-                    animation: {
-                        'slide-in': 'slideIn 0.3s ease-out',
-                        'slide-out': 'slideOut 0.3s ease-out',
-                        'fade-in': 'fadeIn 0.3s ease-out forwards',
-                        'shake': 'shake 0.4s ease-in-out',
-                        'pulse-custom': 'pulseCustom 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        slideIn: {
-                            '0%': { transform: 'translateX(100%)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' },
-                        },
-                        slideOut: {
-                            '0%': { transform: 'translateX(0)', opacity: '1' },
-                            '100%': { transform: 'translateX(100%)', opacity: '0' },
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        shake: {
-                            '0%, 100%': { transform: 'translateX(0)' },
-                            '25%': { transform: 'translateX(-5px)' },
-                            '50%': { transform: 'translateX(5px)' },
-                            '75%': { transform: 'translateX(-5px)' },
-                        },
-                        pulseCustom: {
-                            '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-                            '50%': { opacity: '.7', transform: 'scale(1.05)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .glass {
-                @apply bg-white/70 dark:bg-cardbg/70 backdrop-blur-md border border-white/20 dark:border-white/10;
-            }
-            .glass-card {
-                @apply bg-white dark:bg-cardbg rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-200 hover:shadow-md;
-            }
-            .btn {
-                @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
-            }
-            .btn-primary {
-                @apply bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg hover:shadow-primary/20 focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-darkbg;
-            }
-            .btn-outline {
-                @apply border-2 border-slate-200 dark:border-slate-700 hover:border-primary dark:hover:border-primary hover:text-primary dark:text-slate-200 text-slate-700 dark:text-slate-300;
-            }
-            .input-field {
-                @apply w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200;
-            }
-            .input-field.error {
-                @apply border-danger focus:ring-danger animate-shake;
-            }
-            .toast {
-                @apply flex items-center gap-3 w-80 p-4 mb-3 rounded-xl shadow-xl bg-white dark:bg-cardbg border-l-4 animate-slide-in;
-            }
-            .toast-success { @apply border-accent text-slate-800 dark:text-slate-100; }
-            .toast-error { @apply border-danger text-slate-800 dark:text-slate-100; }
-            .toast-warning { @apply border-yellow-500 text-slate-800 dark:text-slate-100; }
-            .toast-info { @apply border-primary text-slate-800 dark:text-slate-100; }
-            
-            .modal-active { @apply flex; }
-            .modal-card { @apply bg-white dark:bg-cardbg w-full max-w-lg rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 scale-95 opacity-0; }
-            .modal-card.show { @apply scale-100 opacity-100; }
-        }
-    </style>
 </head>
-<body class="bg-slate-50 dark:bg-darkbg text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
-    
-    {% if session.user_id %}
-    <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 flex-shrink-0 bg-slate-900 text-slate-300 flex flex-col transition-transform duration-300 z-40 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 overflow-hidden shadow-2xl md:shadow-none">
-            <div class="h-16 flex items-center px-6 border-b border-white/10">
-                <span class="text-2xl font-display font-bold text-white tracking-tight flex items-center gap-2">
-                    <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                    StockFlow
-                </span>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-blue-600">StockFlow</a>
+            <div class="space-x-4">
+                {% if session.user_id %}
+                    <a href="/products/" class="text-gray-700 hover:text-blue-600">Products</a>
+                    <a href="/" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                    <a href="/settings/" class="text-gray-700 hover:text-blue-600">Settings</a>
+                    <a href="/auth/logout" class="text-gray-700 hover:text-blue-600">Logout</a>
+                {% else %}
+                    <a href="/auth/login" class="text-gray-700 hover:text-blue-600">Login</a>
+                    <a href="/auth/signup" class="text-gray-700 hover:text-blue-600">Sign Up</a>
+                {% endif %}
             </div>
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                <a href="/" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-white transition-colors {% if request.path == '/' %}bg-primary/20 text-white font-medium{% endif %}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    Dashboard
-                </a>
-                <a href="/products/" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-white transition-colors {% if 'products' in request.path %}bg-primary/20 text-white font-medium{% endif %}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                    Products
-                </a>
-                <a href="/analytics/" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-white transition-colors {% if 'analytics' in request.path %}bg-primary/20 text-white font-medium{% endif %}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    Analytics
-                </a>
-                <a href="/activity/" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-white transition-colors {% if 'activity' in request.path %}bg-primary/20 text-white font-medium{% endif %}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                    Activity Log
-                </a>
-            </nav>
-            <div class="p-4 border-t border-white/10 bg-black/20">
-                <a href="/settings/" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-white transition-colors {% if 'settings' in request.path %}bg-primary/20 text-white font-medium{% endif %}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    Settings
-                </a>
-                <a href="/auth/logout" class="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg hover:bg-danger/20 hover:text-rose-400 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    Logout
-                </a>
-            </div>
-        </aside>
-
-        <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <!-- Mobile Header -->
-            <header class="md:hidden h-16 bg-white dark:bg-cardbg border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-20 shadow-sm">
-                <span class="text-xl font-display font-bold text-primary flex items-center gap-2">
-                    <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                    StockFlow
-                </span>
-                <button onclick="toggleSidebar()" class="p-2 rounded-md focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-            </header>
-
-            <!-- Page Content -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-darkbg p-4 md:p-8">
-                <!-- Flash messages as toasts -->
-                <div id="flash-data" class="hidden">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            [
-                            {% for category, message in messages %}
-                                {"type": "{{ category }}", "message": "{{ message }}"}{{ "," if not loop.last }}
-                            {% endfor %}
-                            ]
-                        {% endif %}
-                    {% endwith %}
-                </div>
-                
-                <div class="max-w-7xl mx-auto animate-fade-in" style="animation-delay: 0.1s; animation-fill-mode: both;">
-                    {% block content %}{% endblock %}
-                </div>
-            </main>
         </div>
+    </nav>
+    
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         
-        <!-- Mobile Sidebar Overlay -->
-        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden md:hidden transition-opacity"></div>
-    </div>
-    {% else %}
-    <!-- Public Layout -->
-    <main class="flex-1 w-full h-full animate-fade-in" style="animation-fill-mode: both;">
-        {% block public_content %}{% endblock %}
+        {% block content %}{% endblock %}
     </main>
-    {% endif %}
-
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col items-end pointer-events-none gap-2"></div>
-
-    <!-- UI Scripts -->
-    <script>
-        // Global Toast Notification
-        function showToast(message, type = 'info', duration = 3000) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let icon = '';
-            if (type === 'success') icon = '<svg class="w-6 h-6 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-            else if (type === 'error') icon = '<svg class="w-6 h-6 text-danger shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-            else if (type === 'warning') icon = '<svg class="w-6 h-6 text-yellow-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
-            else icon = '<svg class="w-6 h-6 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-
-            toast.className = `toast toast-${type} pointer-events-auto flex items-start justify-between`;
-            toast.innerHTML = `
-                <div class="flex items-start gap-3">
-                    ${icon}
-                    <span class="font-medium text-sm mt-0.5">${message}</span>
-                </div>
-                <button onclick="closeToast(this)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            `;
-            
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                if(document.body.contains(toast)) closeToast(toast.querySelector('button'));
-            }, duration);
-        }
-
-        function closeToast(btn) {
-            const toast = btn.closest('.toast');
-            toast.style.animation = 'slideOut 0.3s ease-in forwards';
-            setTimeout(() => toast.remove(), 300);
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const flashDataElem = document.getElementById('flash-data');
-            if (flashDataElem && flashDataElem.textContent.trim().startsWith('[')) {
-                try {
-                    const flashes = JSON.parse(flashDataElem.textContent.trim());
-                    flashes.forEach((f, i) => {
-                        setTimeout(() => showToast(f.message, f.type === 'message' ? 'success' : (f.type || 'info')), i * 400);
-                    });
-                } catch(e) {}
-            }
-        });
-
-        // Global Modal System
-        window.openModal = function(title, content, buttons = []) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-fade-in hidden';
-            
-            const btnHtml = buttons.map(btn => `
-                <button id="modal-btn-${btn.id}" class="btn btn-${btn.type || 'primary'} ${btn.class || ''}">
-                    ${btn.label}
-                </button>
-            `).join('');
-
-            wrapper.innerHTML = `
-                <div class="modal-card">
-                    <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
-                        <h2 class="text-xl font-display font-semibold">${title}</h2>
-                        <button class="modal-close text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                    </div>
-                    <div class="p-6">
-                        ${content}
-                    </div>
-                    ${buttons.length ? `<div class="p-6 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3 rounded-b-xl border-t border-slate-200 dark:border-slate-800">${btnHtml}</div>` : ''}
-                </div>
-            `;
-            
-            document.body.appendChild(wrapper);
-            void wrapper.offsetWidth;
-            wrapper.classList.remove('hidden');
-            wrapper.classList.add('flex');
-            
-            const card = wrapper.querySelector('.modal-card');
-            requestAnimationFrame(() => card.classList.add('show'));
-
-            const closeFunc = () => {
-                card.classList.remove('show');
-                wrapper.classList.remove('animate-fade-in');
-                wrapper.style.opacity = '0';
-                wrapper.style.transition = 'opacity 0.3s ease-out';
-                setTimeout(() => wrapper.remove(), 300);
-            };
-
-            wrapper.querySelector('.modal-close').addEventListener('click', closeFunc);
-            wrapper.addEventListener('click', (e) => {
-                if (e.target === wrapper) closeFunc();
-            });
-
-            buttons.forEach(btn => {
-                if (btn.onclick) {
-                    wrapper.querySelector(`#modal-btn-${btn.id}`).addEventListener('click', () => btn.onclick(closeFunc));
-                }
-            });
-        }
-
-        // Mobile Sidebar Toggle
-        window.toggleSidebar = function() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            const isHidden = sidebar.classList.contains('-translate-x-full');
-            
-            if (isHidden) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            }
-        }
-    </script>
 </body>
 </html>
