@@ -19,6 +19,16 @@ def inject_db():
     from flask import g
     g.db = db
 
+@app.context_processor
+def inject_user():
+    """Make current_user available to all templates."""
+    from flask import session
+    from models.user import User
+    user = None
+    if 'user_id' in session:
+        user = User.get_by_id(db, session['user_id'])
+    return dict(current_user=user)
+
 # Register Blueprints
 from routes.auth import auth_bp
 from routes.products import products_bp
