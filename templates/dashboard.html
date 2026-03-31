@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+
+<div class="grid grid-cols-2 gap-4 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <p class="text-gray-600 text-sm">Total Products</p>
+        <p class="text-4xl font-bold text-blue-600">{{ total_products }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+        <p class="text-gray-600 text-sm">Total Inventory</p>
+        <p class="text-4xl font-bold text-green-600">{{ total_inventory }}</p>
+    </div>
+</div>
+
+<h2 class="text-2xl font-bold mb-4">Low Stock Items</h2>
+
+{% if low_stock_items %}
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="w-full">
+            <thead class="bg-gray-100 border-b">
+                <tr>
+                    <th class="px-4 py-3 text-left font-medium">Name</th>
+                    <th class="px-4 py-3 text-left font-medium">SKU</th>
+                    <th class="px-4 py-3 text-left font-medium">Qty</th>
+                    <th class="px-4 py-3 text-left font-medium">Threshold</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in low_stock_items %}
+                    <tr class="border-b bg-yellow-50 hover:bg-yellow-100">
+                        <td class="px-4 py-3">{{ item.name }}</td>
+                        <td class="px-4 py-3">{{ item.sku }}</td>
+                        <td class="px-4 py-3 font-bold text-red-600">{{ item.quantity_on_hand }}</td>
+                        <td class="px-4 py-3">{{ item.low_stock_threshold or "Default" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="bg-white p-8 rounded-lg shadow text-center">
+        <p class="text-gray-500">All stock levels look good!</p>
+    </div>
+{% endif %}
+{% endblock %}
