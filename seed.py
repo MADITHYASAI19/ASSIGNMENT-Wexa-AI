@@ -3,6 +3,9 @@ from pymongo import MongoClient
 import bcrypt
 from datetime import datetime
 from bson import ObjectId
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Connect to MongoDB
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/stockflow")

@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 from pymongo import MongoClient
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "dev-key-change-in-prod"  # For sessions
