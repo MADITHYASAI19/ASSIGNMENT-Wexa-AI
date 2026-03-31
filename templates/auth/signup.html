@@ -1,35 +1,177 @@
 {% extends "base.html" %}
+{% block title %}Create Account{% endblock %}
 
-{% block title %}Sign Up{% endblock %}
+{% block public_content %}
+<div class="min-h-screen flex">
+    <!-- Left Side: Visual/Branding -->
+    <div class="hidden lg:flex lg:w-1/2 bg-slate-900 border-r border-white/10 relative overflow-hidden items-center justify-center p-12">
+        <!-- Abstract gradient shapes -->
+        <div class="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl mix-blend-screen animate-pulse-custom"></div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 bg-secondary/20 rounded-full blur-3xl mix-blend-screen animate-pulse-custom" style="animation-delay: 1.5s;"></div>
+        
+        <div class="z-10 text-center max-w-lg">
+            <h2 class="text-4xl font-display font-bold text-white mb-6">Built For Scale</h2>
+            <p class="text-lg text-slate-300">Join thousands of businesses relying on StockFlow for real-time analytics, bulk operations, and smart automation.</p>
+        </div>
+    </div>
 
-{% block content %}
-<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow">
-    <h1 class="text-2xl font-bold mb-4">Create Account</h1>
-    
-    {% if errors %}
-        {% for error in errors %}
-            <div class="bg-red-100 text-red-800 p-2 rounded mb-2 text-sm">{{ error }}</div>
-        {% endfor %}
-    {% endif %}
-    
-    <form method="POST" class="space-y-4">
-        <div>
-            <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded" required>
+    <!-- Right Side: Form -->
+    <div class="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 bg-white dark:bg-cardbg">
+        <div class="mx-auto w-full max-w-[420px]">
+            <div class="text-center mb-8">
+                <span class="inline-flex items-center gap-2 text-2xl font-display font-bold text-primary mb-2">
+                    <svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    StockFlow
+                </span>
+                <h1 class="text-3xl font-display font-bold text-slate-900 dark:text-white">Create Account</h1>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Let's get your organization set up.</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                    <span id="step-track">Step 1 of 2</span>
+                </div>
+                <div class="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex transition-all">
+                    <div id="pb-fill" class="h-full bg-gradient-to-r from-primary to-secondary w-1/2 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            {% if errors %}
+                {% for error in errors %}
+                <div class="bg-danger/10 text-danger border border-danger/20 p-4 rounded-lg mb-6 text-sm flex items-start gap-3 animate-shake">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>{{ error }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" class="space-y-5" id="signupForm">
+                <!-- STEP 1 View -->
+                <div id="step1">
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email address</label>
+                            <input type="email" name="email" id="email" class="input-field" placeholder="name@company.com" required>
+                            <p id="email-err" class="text-xs text-danger mt-1 hidden"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Organization Name</label>
+                            <input type="text" name="org_name" id="org_name" class="input-field" placeholder="Acme Corp." required>
+                            <p id="org-err" class="text-xs text-danger mt-1 hidden"></p>
+                        </div>
+                        <button type="button" onclick="nextStep()" class="btn btn-primary w-full py-2.5 mt-4">Continue</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2 View -->
+                <div id="step2" class="hidden">
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Create Password</label>
+                            <input type="password" name="password" id="password" class="input-field" placeholder="Min. 6 characters" required>
+                            
+                            <!-- Strength Meter -->
+                            <div class="mt-2 flex gap-1 h-1.5 w-full">
+                                <div id="str-1" class="h-full w-1/4 bg-slate-200 dark:bg-slate-700 rounded-full transition-colors"></div>
+                                <div id="str-2" class="h-full w-1/4 bg-slate-200 dark:bg-slate-700 rounded-full transition-colors"></div>
+                                <div id="str-3" class="h-full w-1/4 bg-slate-200 dark:bg-slate-700 rounded-full transition-colors"></div>
+                                <div id="str-4" class="h-full w-1/4 bg-slate-200 dark:bg-slate-700 rounded-full transition-colors"></div>
+                            </div>
+                            <p id="pwd-msg" class="text-xs text-slate-500 mt-1">Must be at least 6 characters.</p>
+                        </div>
+                        
+                        <div class="flex gap-3 pt-2">
+                            <button type="button" onclick="prevStep()" class="btn btn-outline py-2.5 px-6">Back</button>
+                            <button type="submit" class="btn btn-primary flex-1 py-2.5">Complete Signup</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
+                Already have an account? <a href="/auth/login" class="font-medium text-primary hover:text-secondary hover:underline">Sign in</a>
+            </div>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700">Organization Name</label>
-            <input type="text" name="org_name" class="w-full px-3 py-2 border border-gray-300 rounded" required>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700">Password (min 6 chars)</label>
-            <input type="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded" required>
-        </div>
-        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Sign Up</button>
-    </form>
-    
-    <p class="mt-4 text-center text-sm text-gray-600">
-        Already have an account? <a href="/auth/login" class="text-blue-600 hover:underline">Login</a>
-    </p>
+    </div>
 </div>
+
+<script>
+    const s1 = document.getElementById('step1');
+    const s2 = document.getElementById('step2');
+    const pb = document.getElementById('pb-fill');
+    const tr = document.getElementById('step-track');
+    
+    function nextStep() {
+        const email = document.getElementById('email');
+        const org = document.getElementById('org_name');
+        
+        let valid = true;
+        if (!email.value.includes('@') || email.value.length < 5) {
+            email.classList.add('error');
+            document.getElementById('email-err').textContent = "Please enter a valid email.";
+            document.getElementById('email-err').classList.remove('hidden');
+            valid = false;
+        } else {
+            email.classList.remove('error');
+            document.getElementById('email-err').classList.add('hidden');
+        }
+
+        if (org.value.length < 2) {
+            org.classList.add('error');
+            document.getElementById('org-err').textContent = "Organization requires at least 2 chars.";
+            document.getElementById('org-err').classList.remove('hidden');
+            valid = false;
+        } else {
+            org.classList.remove('error');
+            document.getElementById('org-err').classList.add('hidden');
+        }
+
+        if(valid) {
+            s1.classList.add('hidden');
+            s2.classList.remove('hidden');
+            s2.classList.add('animate-slide-in');
+            pb.style.width = '100%';
+            tr.textContent = 'Step 2 of 2';
+        }
+    }
+
+    function prevStep() {
+        s2.classList.add('hidden');
+        s1.classList.remove('hidden');
+        s1.classList.add('animate-slide-in');
+        pb.style.width = '50%';
+        tr.textContent = 'Step 1 of 2';
+    }
+
+    // Password Strength Meter Logic
+    document.getElementById('password').addEventListener('input', function(e) {
+        const val = e.target.value;
+        const s1 = document.getElementById('str-1');
+        const s2 = document.getElementById('str-2');
+        const s3 = document.getElementById('str-3');
+        const s4 = document.getElementById('str-4');
+        const msg = document.getElementById('pwd-msg');
+        
+        let strength = 0;
+        if (val.length >= 6) strength += 1;
+        if (val.match(/[A-Z]/)) strength += 1;
+        if (val.match(/[0-9]/)) strength += 1;
+        if (val.match(/[^A-Za-z0-9]/)) strength += 1;
+
+        // Reset
+        [s1, s2, s3, s4].forEach(el => el.className = 'h-full w-1/4 bg-slate-200 dark:bg-slate-700 rounded-full transition-colors');
+        
+        if (val.length === 0) {
+            msg.textContent = 'Must be at least 6 characters.';
+            msg.className = 'text-xs text-slate-500 mt-1';
+            return;
+        }
+
+        if (strength >= 1) { s1.classList.add('bg-danger'); msg.textContent = 'Weak'; msg.className = 'text-xs text-danger mt-1'; }
+        if (strength >= 2) { s1.className='h-full w-1/4 bg-yellow-400 rounded-full'; s2.className='h-full w-1/4 bg-yellow-400 rounded-full'; msg.textContent = 'Fair'; msg.className = 'text-xs text-yellow-500 mt-1'; }
+        if (strength >= 3) { s1.className='h-full w-1/4 bg-accent rounded-full'; s2.className='h-full w-1/4 bg-accent rounded-full'; s3.className='h-full w-1/4 bg-accent rounded-full'; msg.textContent = 'Good'; msg.className = 'text-xs text-accent mt-1'; }
+        if (strength >= 4) { s4.className='h-full w-1/4 bg-accent rounded-full'; msg.textContent = 'Strong'; }
+    });
+</script>
 {% endblock %}
