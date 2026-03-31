@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, session, redirect, url_for, g
+from flask import Blueprint, render_template, request, session, redirect, url_for, g, jsonify
 from models.product import Product
 from functools import wraps
 from bson import ObjectId
@@ -86,3 +86,20 @@ def delete(product_id):
     org_id = session["organization_id"]
     Product.delete(g.db, product_id, org_id)
     return redirect(url_for("products.list_products"))
+
+@products_bp.route("/<product_id>/adjust", methods=["POST"])
+@login_required
+def adjust_quantity(product_id):
+    try:
+        data = request.get_json()
+        delta = int(data.get("delta", 0))
+        org_id = session["organization_id"]
+        product = Product.get_by_id(g.db, product_id, org_id)
+        if not product:
+            return jsonify({"success": False, "error": "Product not found"}), 404
+        
+        new_qty = max(0, int(product.get("quantity_on_hand", 0)) + delta)
+        Product.update(g.db, product_id, org_id, quantity_on_hand=new_qty)
+        return jsonify({"success": True, "product_name": product.get("name"), "new_qty": new_qty})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
