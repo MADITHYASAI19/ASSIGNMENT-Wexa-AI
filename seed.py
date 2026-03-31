@@ -58,17 +58,21 @@ def create_products(org_id, products_data):
 if __name__ == "__main__":
     clear_db()
     
-    # 1. Stark Industries (Org 1)
+    # 1. Stark Industries (Org 1) - THE DEMO ACCOUNT
     stark_org_id = create_org_and_user(
         org_name="Stark Industries",
         email="tony@stark.com",
-        password="password123"
+        password="iamironman"
     )
     stark_products = [
-        {"name": "Iron Man Suit Mark I", "sku": "MK-001", "qty": 1, "cost": 1000000, "sell": 5000000, "threshold": 2},
-        {"name": "Arc Reactor Generator", "sku": "ARC-100", "qty": 10, "cost": 500, "sell": 2000, "threshold": 5},
-        {"name": "Repulsor Glove", "sku": "REP-055", "qty": 3, "cost": 1500, "sell": 4500, "threshold": 5}, # Low stock
-        {"name": "Vibranium Shield Prototype", "sku": "VIB-001", "qty": 0, "cost": 10000, "sell": 50000, "threshold": 1}, # Low stock
+        {"name": "Arc Reactor Mk4", "sku": "ARC-MK4", "qty": 12, "cost": 5000, "sell": 25000, "threshold": 5},
+        {"name": "Repulsor Gauntlet L", "sku": "REP-GNT-L", "qty": 4, "cost": 1500, "sell": 4500, "threshold": 5},
+        {"name": "Iron Man Suit Mk47", "sku": "IM-MK47", "qty": 1, "cost": 1000000, "sell": 5000000, "threshold": 2},
+        {"name": "Vibranium Alloy Plate", "sku": "VIB-PLT", "qty": 20, "cost": 5000, "sell": 15000, "threshold": 10},
+        {"name": "JARVIS Core Module", "sku": "JARVIS-CORE", "qty": 2, "cost": 50000, "sell": 250000, "threshold": 1},
+        {"name": "War Machine Frame", "sku": "WM-FRM-01", "qty": 1, "cost": 800000, "sell": 4000000, "threshold": 1},
+        {"name": "Nano-Particle Canister", "sku": "NANO-CAN-88", "qty": 15, "cost": 2000, "sell": 8000, "threshold": 5},
+        {"name": "Unibeam Emitter", "sku": "UNI-EMT-X", "qty": 0, "cost": 1000, "sell": 3500, "threshold": 5}, # Critical
     ]
     create_products(stark_org_id, stark_products)
 
@@ -87,5 +91,5 @@ if __name__ == "__main__":
     
     print("\n--- SEEDING COMPLETE ---")
     print("You can now log in with the following accounts:")
-    print("1. tony@stark.com / password123")
+    print("1. tony@stark.com / iamironman")
     print("2. bruce@wayne.com / password123")
