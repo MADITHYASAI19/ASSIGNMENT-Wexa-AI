@@ -1,49 +1,239 @@
 {% extends "base.html" %}
-
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-6">Dashboard</h1>
-
-<div class="grid grid-cols-2 gap-4 mb-8">
-    <div class="bg-white p-6 rounded-lg shadow">
-        <p class="text-gray-600 text-sm">Total Products</p>
-        <p class="text-4xl font-bold text-blue-600">{{ total_products }}</p>
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
+    <div>
+        <h1 class="text-3xl font-display font-bold text-slate-900 dark:text-white mb-1">Dashboard</h1>
+        <p class="text-slate-500 dark:text-slate-400">Welcome back! Here's your inventory overview.</p>
     </div>
-    <div class="bg-white p-6 rounded-lg shadow">
-        <p class="text-gray-600 text-sm">Total Inventory</p>
-        <p class="text-4xl font-bold text-green-600">{{ total_inventory }}</p>
+    <div class="mt-4 md:mt-0 flex gap-3">
+        <button onclick="document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); showToast('Theme switched!', 'success')" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400" title="Toggle Theme">
+            <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button class="relative p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            {% if low_stock_items|length > 0 %}
+            <span class="absolute top-2 right-2 flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-danger"></span>
+            </span>
+            {% endif %}
+        </button>
+        <a href="/products/create" class="btn btn-primary shadow-sm hover:shadow-primary/30">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add Product
+        </a>
     </div>
 </div>
 
-<h2 class="text-2xl font-bold mb-4">Low Stock Items</h2>
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+    <!-- Card 1 -->
+    <div class="glass-card p-6" style="animation-delay: 0.1s;">
+        <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-blue-50 dark:bg-primary/10 rounded-xl">
+                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            </div>
+            <span class="text-xs font-semibold px-2 py-1 bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 rounded-full">+4%</span>
+        </div>
+        <div>
+            <h3 class="text-3xl font-display font-bold text-slate-800 dark:text-white mb-1 counter" data-target="{{ total_products }}">{{ total_products }}</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Active Products</p>
+        </div>
+    </div>
 
-{% if low_stock_items %}
-    <div class="overflow-x-auto bg-white rounded-lg shadow">
-        <table class="w-full">
-            <thead class="bg-gray-100 border-b">
-                <tr>
-                    <th class="px-4 py-3 text-left font-medium">Name</th>
-                    <th class="px-4 py-3 text-left font-medium">SKU</th>
-                    <th class="px-4 py-3 text-left font-medium">Qty</th>
-                    <th class="px-4 py-3 text-left font-medium">Threshold</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in low_stock_items %}
-                    <tr class="border-b bg-yellow-50 hover:bg-yellow-100">
-                        <td class="px-4 py-3">{{ item.name }}</td>
-                        <td class="px-4 py-3">{{ item.sku }}</td>
-                        <td class="px-4 py-3 font-bold text-red-600">{{ item.quantity_on_hand }}</td>
-                        <td class="px-4 py-3">{{ item.low_stock_threshold or "Default" }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Card 2 -->
+    <div class="glass-card p-6" style="animation-delay: 0.2s;">
+        <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-emerald-50 dark:bg-accent/10 rounded-xl">
+                <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+        </div>
+        <div>
+            <!-- Note: Total value calculation mocked for MVP unless calculated backend side -->
+            <h3 class="text-3xl font-display font-bold text-slate-800 dark:text-white mb-1">$<span class="counter" data-target="45230">45,230</span></h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Est. Inventory Value</p>
+        </div>
     </div>
-{% else %}
-    <div class="bg-white p-8 rounded-lg shadow text-center">
-        <p class="text-gray-500">All stock levels look good!</p>
+
+    <!-- Card 3 -->
+    <div class="glass-card p-6" style="animation-delay: 0.3s;">
+        <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-purple-50 dark:bg-secondary/10 rounded-xl">
+                <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            </div>
+        </div>
+        <div>
+            <h3 class="text-3xl font-display font-bold text-slate-800 dark:text-white mb-1 counter" data-target="{{ total_inventory }}">{{ total_inventory }}</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Total Units Stored</p>
+        </div>
     </div>
-{% endif %}
+
+    <!-- Card 4 -->
+    <a href="#low-stock-table" class="block glass-card p-6 border-transparent hover:border-danger/30 cursor-pointer group" style="animation-delay: 0.4s;">
+        <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-rose-50 dark:bg-danger/10 rounded-xl group-hover:bg-danger/20 transition-colors">
+                <svg class="w-6 h-6 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+        </div>
+        <div>
+            <h3 class="text-3xl font-display font-bold text-danger mb-1">{{ low_stock_items|length }}</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium group-hover:text-danger transition-colors">Low Stock Alerts</p>
+        </div>
+    </a>
+</div>
+
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+    
+    <!-- Left Column (Tables) -->
+    <div class="lg:col-span-2 space-y-8 animate-fade-in" style="animation-delay: 0.5s;">
+        <!-- Low Stock Table -->
+        <div id="low-stock-table" class="glass-card overflow-hidden">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-display font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="text-danger">⚠️</span> Attention Needed
+                    </h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Products dropping below threshold.</p>
+                </div>
+            </div>
+            
+            {% if low_stock_items %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 uppercase font-semibold text-xs border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                            <th class="px-6 py-4">Product Name</th>
+                            <th class="px-6 py-4">SKU</th>
+                            <th class="px-6 py-4 relative">Current Qty</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                        {% for item in low_stock_items %}
+                        <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors {{ 'bg-amber-50/50 dark:bg-amber-900/10' if item.quantity_on_hand > 0 else 'bg-rose-50/50 dark:bg-rose-900/10' }}">
+                            <td class="px-6 py-4">
+                                <a href="/products/{{ item._id }}/edit" class="font-medium text-primary hover:underline">{{ item.name }}</a>
+                            </td>
+                            <td class="px-6 py-4 font-mono text-slate-500 dark:text-slate-400">
+                                {{ item.sku }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold {{ 'text-yellow-600 dark:text-yellow-500' if item.quantity_on_hand > 0 else 'text-danger' }}">{{ item.quantity_on_hand }}</span>
+                                    <span class="text-xs text-slate-400">/ {{ item.low_stock_threshold or "5" }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if item.quantity_on_hand == 0 %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400">
+                                    🔴 Critical
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400">
+                                    ⚠️ Low
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="/products/{{ item._id }}/edit" class="text-slate-400 hover:text-primary transition-colors">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="px-6 py-16 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-500/20 mb-4">
+                    <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h3 class="text-lg font-medium text-slate-900 dark:text-white">All stock levels look good! 🎉</h3>
+                <p class="text-slate-500 dark:text-slate-400 mt-1">No items are dropping below their thresholds right now.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column (Quick Stats) -->
+    <div class="space-y-6 animate-fade-in" style="animation-delay: 0.6s;">
+        <!-- Quick Actions -->
+        <div class="glass-card p-6 bg-gradient-to-br from-primary to-secondary text-white border-transparent">
+            <h3 class="text-lg font-display font-semibold mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+                <a href="/products/create" class="flex items-center justify-between px-4 py-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors group">
+                    <span class="font-medium">Add New Product</span>
+                    <svg class="w-5 h-5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+                <button onclick="showToast('Bulk import coming soon to Analytics Module!', 'info')" class="w-full flex items-center justify-between px-4 py-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors group">
+                    <span class="font-medium">Bulk Import CSV</span>
+                    <svg class="w-5 h-5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Activity Box Mockup -->
+        <div class="glass-card">
+            <div class="p-5 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="font-display font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    Recent Activity
+                </h3>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="flex gap-3 items-start">
+                    <div class="mt-0.5 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                        <span class="text-xs font-semibold text-primary">JD</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-800 dark:text-slate-200">System <span class="text-slate-500">updated quantities</span></p>
+                        <p class="text-xs text-slate-400 uppercase mt-0.5">2 hours ago</p>
+                    </div>
+                </div>
+                <div class="flex gap-3 items-start">
+                    <div class="mt-0.5 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-800 dark:text-slate-200">You <span class="text-slate-500">created a new product</span></p>
+                        <p class="text-xs text-slate-400 uppercase mt-0.5">5 hours ago</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-3 border-t border-slate-200 dark:border-slate-800 text-center">
+                <a href="#" onclick="showToast('Activity Hub view coming in Phase 5.', 'info')" class="text-sm text-primary hover:text-secondary font-medium transition-colors">View All Activity</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Counter animation for numbers
+    document.querySelectorAll('.counter').forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'));
+        const duration = 1000; 
+        let startTimestamp = null;
+        
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            // easeOutQuart
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            const currentObj = Math.floor(easeProgress * target);
+            // Format naturally
+            el.innerHTML = currentObj.toLocaleString();
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                el.innerHTML = target.toLocaleString();
+            }
+        };
+        window.requestAnimationFrame(step);
+    });
+</script>
 {% endblock %}

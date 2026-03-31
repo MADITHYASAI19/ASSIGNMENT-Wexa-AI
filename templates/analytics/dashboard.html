@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
+    <div>
+        <h1 class="text-3xl font-display font-bold text-slate-900 dark:text-white mb-1">Analytics & Insights</h1>
+        <p class="text-slate-500 dark:text-slate-400">Deep dive into your inventory metrics.</p>
+    </div>
+    <div class="mt-4 md:mt-0 flex gap-3">
+        <select class="input-field max-w-[150px] appearance-none cursor-pointer text-sm font-medium">
+            <option>Last 30 Days</option>
+            <option>Last 3 Months</option>
+            <option>This Year</option>
+        </select>
+        <button onclick="showToast('Exporting PDF Report...', 'info')" class="btn btn-outline shadow-sm bg-white dark:bg-cardbg">
+            <svg class="w-5 h-5 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Export Report
+        </button>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8 animate-fade-in" style="animation-delay: 0.1s;">
+    <!-- Chart 1: Line Chart -->
+    <div class="glass-card p-6">
+        <h3 class="text-lg font-display font-semibold text-slate-800 dark:text-white mb-6">Inventory Value Trend</h3>
+        <div class="relative h-72 w-full">
+            <canvas id="valueChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Chart 2: Pie Chart -->
+    <div class="glass-card p-6">
+        <h3 class="text-lg font-display font-semibold text-slate-800 dark:text-white mb-6">Stock Level Distribution</h3>
+        <div class="relative h-72 w-full flex justify-center">
+            <canvas id="distributionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Chart 3: Horizontal Bar -->
+    <div class="glass-card p-6">
+        <h3 class="text-lg font-display font-semibold text-slate-800 dark:text-white mb-6">Top Value Products</h3>
+        <div class="relative h-72 w-full">
+            <canvas id="topProductsChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Chart 4: Turnover Info -->
+    <div class="glass-card p-6 flex flex-col items-center justify-center text-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50">
+        <div class="w-32 h-32 rounded-full border-8 border-accent flex items-center justify-center mb-6 relative overflow-hidden">
+            <div class="absolute inset-0 bg-accent opacity-10"></div>
+            <span class="text-3xl font-bold text-slate-800 dark:text-white">High</span>
+        </div>
+        <h3 class="text-xl font-display font-semibold text-slate-800 dark:text-white mb-2">Excellent Turnover Rate</h3>
+        <p class="text-sm text-slate-500 max-w-sm">Items are moving fast! Your average inventory cycle is currently 22 days, which is 14% faster than last month.</p>
+        <button class="btn btn-outline mt-6">View Detailed Turnover</button>
+    </div>
+</div>
+
+<script>
+    // Utility for generic chart styling matching Tailwind Dark Mode
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#f1f5f9' : '#0f172a';
+    const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+    // Init ChartJS global defaults
+    Chart.defaults.color = textColor;
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    // Chart 1: Inventory Value Line Chart
+    const ctx1 = document.getElementById('valueChart').getContext('2d');
+    
+    // Create subtle gradient fill
+    const gradient1 = ctx1.createLinearGradient(0, 0, 0, 300);
+    gradient1.addColorStop(0, 'rgba(30, 64, 175, 0.4)'); // Primary blue
+    gradient1.addColorStop(1, 'rgba(30, 64, 175, 0)');
+
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Est. Value ($)',
+                data: [32000, 38000, 35000, 45230],
+                borderColor: '#1e40af',
+                backgroundColor: gradient1,
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#1e40af',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false } },
+                x: { grid: { display: false }, border: { display: false } }
+            }
+        }
+    });
+
+    // Chart 2: Status Pie Chart
+    const ctx2 = document.getElementById('distributionChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Normal Stock', 'Low Stock', 'Critical'],
+            datasets: [{
+                data: [65, 20, 15],
+                backgroundColor: ['#059669', '#EAB308', '#E11D48'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } }
+            }
+        }
+    });
+
+    // Chart 3: Top Value Products Bar
+    const ctx3 = document.getElementById('topProductsChart').getContext('2d');
+    new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: ['Widget Pro', 'Mega Component', 'Fastener Set', 'Steel Bearings', 'Motor Block'],
+            datasets: [{
+                label: 'Value ($)',
+                data: [15000, 8500, 6200, 4500, 3200],
+                backgroundColor: '#7C3AED', // Secondary
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y', // Horizontal
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: gridColor }, border: { display: false } },
+                y: { grid: { display: false }, border: { display: false } }
+            }
+        }
+    });
+</script>
+{% endblock %}
