@@ -1,35 +1,168 @@
 {% extends "base.html" %}
 
-{% block title %}Sign Up{% endblock %}
+{% block title %}Create Command Identity{% endblock %}
 
-{% block content %}
-<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow">
-    <h1 class="text-2xl font-bold mb-4">Create Account</h1>
-    
-    {% if errors %}
-        {% for error in errors %}
-            <div class="bg-red-100 text-red-800 p-2 rounded mb-2 text-sm">{{ error }}</div>
-        {% endfor %}
-    {% endif %}
-    
-    <form method="POST" class="space-y-4">
-        <div>
-            <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded" required>
+{% block public_content %}
+<div class="fixed inset-0 flex flex-col lg:flex-row h-screen bg-bg-dark overflow-hidden">
+    <!-- Left Side: Visual/Branding (Reversed for Signup) -->
+    <div class="hidden lg:flex w-[40%] relative bg-bg-darker overflow-hidden items-center justify-center p-20 animate-fade">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
+        
+        <div class="z-10 max-w-md text-left">
+            <div class="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center font-display font-bold text-white text-2xl mb-12 shadow-2xl">S</div>
+            
+            <h2 class="text-4xl font-display font-bold text-white mb-6 leading-tight">Join the <br>Elite Matrix</h2>
+            <p class="text-lg text-text-secondary leading-relaxed mb-8">
+                Establish your administrative node and begin managing assets with unprecedented precision.
+            </p>
+            
+            <ul class="space-y-4">
+                <li class="flex items-center gap-3 text-sm text-text-muted">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-accent"></i>
+                    <span>Real-time Intelligence Stream</span>
+                </li>
+                <li class="flex items-center gap-3 text-sm text-text-muted">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-accent"></i>
+                    <span>Zero-latency Asset Registry</span>
+                </li>
+                <li class="flex items-center gap-3 text-sm text-text-muted">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-accent"></i>
+                    <span>Enterprise Security Protocols</span>
+                </li>
+            </ul>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700">Organization Name</label>
-            <input type="text" name="org_name" class="w-full px-3 py-2 border border-gray-300 rounded" required>
+    </div>
+
+    <!-- Right Side: Form (Wider for signup steps) -->
+    <div class="flex-1 flex flex-col justify-center py-12 px-8 sm:px-12 lg:px-24 bg-bg-surface/50 backdrop-blur-3xl lg:border-l border-white/5 animate-slide">
+        <div class="mx-auto w-full max-w-[480px]">
+            <div class="mb-10 text-center lg:text-left">
+                <h2 class="text-4xl font-display font-bold text-white mb-3">New Identity</h2>
+                <p class="text-text-secondary font-medium">Step <span id="current-step">1</span> of 2: Basic Authentication</p>
+                
+                <!-- Progress Bar -->
+                <div class="mt-6 flex gap-2">
+                    <div id="pb-1" class="h-1 flex-1 bg-primary rounded-full transition-all duration-500"></div>
+                    <div id="pb-2" class="h-1 flex-1 bg-white/10 rounded-full transition-all duration-500"></div>
+                </div>
+            </div>
+
+            {% if error %}
+            <div class="bg-danger/10 border border-danger/20 p-4 rounded-xl mb-8 flex items-start gap-3 animate-fade">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-danger shrink-0"></i>
+                <span class="text-sm text-danger/80">{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form method="POST" class="space-y-6" id="signupForm">
+                <!-- Step 1: User Info -->
+                <div id="step-1" class="space-y-6 transition-all duration-300">
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-text-muted">Terminal Address</label>
+                        <div class="relative group">
+                            <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors"></i>
+                            <input type="email" name="email" id="email" class="input-field pl-12" placeholder="admin@galaxy.com" required>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-bold uppercase tracking-[0.2em] text-text-muted">Security Link</label>
+                        </div>
+                        <div class="relative group">
+                            <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors"></i>
+                            <input type="password" name="password" id="password" class="input-field pl-12 pr-12" placeholder="••••••••" required onkeyup="UI.checkStrength(this.value)">
+                            <button type="button" onclick="UI.togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-white">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Password Strength Meter -->
+                        <div class="flex gap-1 mt-2 px-1">
+                            <div class="h-1 flex-1 rounded-full bg-white/5 transition-all duration-300 sm-segment"></div>
+                            <div class="h-1 flex-1 rounded-full bg-white/5 transition-all duration-300 sm-segment"></div>
+                            <div class="h-1 flex-1 rounded-full bg-white/5 transition-all duration-300 sm-segment"></div>
+                            <div class="h-1 flex-1 rounded-full bg-white/5 transition-all duration-300 sm-segment"></div>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="UI.nextStep()" class="btn btn-primary w-full py-4 text-sm tracking-[0.3em] font-bold mt-4 shadow-xl">
+                        PROCEED TO STEP 2
+                    </button>
+                </div>
+
+                <!-- Step 2: Org Info (Hidden initially) -->
+                <div id="step-2" class="hidden space-y-6 transition-all duration-300 opacity-0 translate-x-10">
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-text-muted">Command Entity Name</label>
+                        <div class="relative group">
+                            <i data-lucide="building" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors"></i>
+                            <input type="text" name="org_name" id="org_name" class="input-field pl-12" placeholder="Stark Industries">
+                        </div>
+                        <p class="text-[0.65rem] text-text-muted px-1 italic">This will be your workspace identifier.</p>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button type="button" onclick="UI.prevStep()" class="btn flex-1 bg-white/5 border border-white/10 text-white text-xs tracking-widest font-bold hover:bg-white/10">
+                            BACK
+                        </button>
+                        <button type="submit" class="btn btn-primary flex-[2] py-4 text-sm tracking-[0.3em] font-bold shadow-xl">
+                            INITIALIZE SYSTEM
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="mt-12 text-center">
+                <p class="text-[0.7rem] uppercase tracking-[0.2em] text-text-muted mb-4 font-bold">Existing Identity?</p>
+                <a href="/auth/login" class="text-primary hover:text-secondary font-bold text-xs uppercase tracking-widest transition-colors">
+                    TERMINAL SIGN IN
+                </a>
+            </div>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700">Password (min 6 chars)</label>
-            <input type="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded" required>
-        </div>
-        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Sign Up</button>
-    </form>
-    
-    <p class="mt-4 text-center text-sm text-gray-600">
-        Already have an account? <a href="/auth/login" class="text-blue-600 hover:underline">Login</a>
-    </p>
+    </div>
 </div>
+
+<script>
+const UI = {
+    togglePassword: () => {
+        const input = document.getElementById('password');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        lucide.createIcons();
+    },
+    nextStep: () => {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        if(!email || !pass) return showToast("Fields required.", "error");
+
+        document.getElementById('step-1').classList.add('hidden');
+        const s2 = document.getElementById('step-2');
+        s2.classList.remove('hidden');
+        setTimeout(() => {
+            s2.classList.remove('opacity-0', 'translate-x-10');
+        }, 10);
+        
+        document.getElementById('current-step').innerText = "2";
+        document.getElementById('pb-2').classList.replace('bg-white/10', 'bg-primary');
+    },
+    prevStep: () => {
+        document.getElementById('step-2').classList.add('opacity-0', 'translate-x-10');
+        setTimeout(() => {
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-1').classList.remove('hidden');
+        }, 300);
+        document.getElementById('current-step').innerText = "1";
+        document.getElementById('pb-2').classList.replace('bg-primary', 'bg-white/10');
+    },
+    checkStrength: (val) => {
+        const segments = document.querySelectorAll('.sm-segment');
+        segments.forEach(s => s.className = 'h-1 flex-1 rounded-full bg-white/5 transition-all duration-300 sm-segment');
+        
+        if(val.length > 0) segments[0].classList.add('bg-danger');
+        if(val.length > 5) segments[1].classList.add('bg-warning');
+        if(val.length > 8) segments[2].classList.add('bg-primary');
+        if(val.length > 10 && /[A-Z]/.test(val)) segments[3].classList.add('bg-accent');
+    }
+};
+</script>
 {% endblock %}

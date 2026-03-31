@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center">
+    <div class="text-center">
+        <div class="relative mb-8">
+            <div class="text-9xl font-display font-bold text-white/10">404</div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i data-lucide="search-x" class="w-24 h-24 text-primary opacity-50"></i>
+            </div>
+        </div>
+        <h1 class="text-3xl font-display font-bold text-white mb-4">Matrix Node Not Found</h1>
+        <p class="text-text-secondary mb-8 max-w-md mx-auto">The requested resource could not be located in the StockFlow neural network. The node may have been moved or no longer exists.</p>
+        <div class="flex gap-4 justify-center">
+            <a href="/" class="btn btn-primary">
+                <i data-lucide="home" class="w-4 h-4 mr-2"></i>
+                Return to Command Center
+            </a>
+            <button onclick="history.back()" class="btn bg-white/5 border border-white/10 text-white hover:bg-white/10">
+                <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                Previous Node
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

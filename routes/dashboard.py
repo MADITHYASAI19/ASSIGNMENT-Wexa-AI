@@ -27,8 +27,19 @@ def index():
     # Get low-stock items
     low_stock_items = Product.get_low_stock_items(g.db, org_id)
     
+    # Aggregate Stats
+    total_val = sum((p.get("quantity_on_hand", 0) * p.get("selling_price", 0)) for p in all_products)
+    
+    # Activity Feed (Fetch from DB if exists, otherwise mock)
+    from bson import ObjectId
+    activities = list(g.db.activity_log.find({"organization_id": ObjectId(org_id)}).sort("timestamp", -1).limit(10))
+    
     return render_template("dashboard.html",
-        total_products=total_products,
-        total_inventory=total_inventory,
-        low_stock_items=low_stock_items
+        stats={
+            "total_products": total_products,
+            "total_value": "{:,.0f}".format(total_val),
+            "low_stock_count": len(low_stock_items)
+        },
+        low_stock_products=low_stock_items,
+        activities=activities
     )

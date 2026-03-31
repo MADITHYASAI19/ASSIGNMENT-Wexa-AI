@@ -1,46 +1,146 @@
 {% extends "base.html" %}
 
-{% block title %}Products{% endblock %}
+{% block title %}Asset Registry{% endblock %}
+{% block header_title %}Inventory Matrix{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold">Products</h1>
-    <a href="/products/create" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Product</a>
-</div>
+<div class="space-y-6 animate-fade">
+    <!-- Action Bar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="relative group w-full md:w-96">
+            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors"></i>
+            <input type="text" id="asset-search" 
+                class="input-field pl-12 bg-white/5 border-white/10 hover:border-white/20 focus:border-primary/50" 
+                placeholder="Search across nodes (Name, Category, ID)...">
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <button onclick="showToast('Exporting to Neural PDF...', 'info')" class="btn bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10">
+                <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                Export
+            </button>
+            <a href="/products/new" class="btn btn-primary">
+                <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                Register New Asset
+            </a>
+        </div>
+    </div>
 
-{% if products %}
-    <div class="overflow-x-auto bg-white rounded-lg shadow">
-        <table class="w-full">
-            <thead class="bg-gray-100 border-b">
-                <tr>
-                    <th class="px-4 py-3 text-left font-medium">Name</th>
-                    <th class="px-4 py-3 text-left font-medium">SKU</th>
-                    <th class="px-4 py-3 text-left font-medium">Qty</th>
-                    <th class="px-4 py-3 text-left font-medium">Sell Price</th>
-                    <th class="px-4 py-3 text-left font-medium">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in products %}
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-3">{{ product.name }}</td>
-                        <td class="px-4 py-3">{{ product.sku }}</td>
-                        <td class="px-4 py-3">{{ product.quantity_on_hand }}</td>
-                        <td class="px-4 py-3">${{ "%.2f"|format(product.selling_price) if product.selling_price else "-" }}</td>
-                        <td class="px-4 py-3 space-x-2">
-                            <a href="/products/{{ product._id }}/edit" class="text-blue-600 hover:underline">Edit</a>
-                            <form method="POST" action="/products/{{ product._id }}/delete" style="display:inline;">
-                                <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Delete?')">Delete</button>
-                            </form>
+    <!-- Inventory Table -->
+    <div class="glass-card rounded-2xl overflow-hidden border border-white/5">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-black/40 border-b border-white/5">
+                        <th class="p-5 w-12">
+                            <input type="checkbox" id="select-all-assets" class="w-4 h-4 bg-transparent border-white/20 rounded focus:ring-primary checked:bg-primary">
+                        </th>
+                        <th class="p-5 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted font-display">Asset Identity</th>
+                        <th class="p-5 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted font-display">Operational Status</th>
+                        <th class="p-5 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted font-display">Current Volume</th>
+                        <th class="p-5 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted font-display">Valuation</th>
+                        <th class="p-5 text-right text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted font-display">Controls</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for product in products %}
+                    <tr class="group hover:bg-white/5 transition-colors">
+                        <td class="p-5">
+                            <input type="checkbox" class="asset-checkbox w-4 h-4 bg-transparent border-white/20 rounded focus:ring-primary checked:bg-primary">
+                        </td>
+                        <td class="p-5">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center text-primary font-display font-bold group-hover:scale-110 transition-transform">
+                                    {{ product.name[0]|upper }}
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-semibold text-white group-hover:text-primary transition-colors">{{ product.name }}</span>
+                                    <span class="text-[0.6rem] text-text-muted uppercase font-mono tracking-widest">{{ product.category or 'Unclassified' }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-5">
+                            {% set status = 'nominal' %}
+                            {% if product.quantity_on_hand <= 0 %}
+                                {% set status = 'danger' %}
+                            {% elif product.quantity_on_hand <= product.low_stock_threshold %}
+                                {% set status = 'warning' %}
+                            {% endif %}
+                        <span id="badge-{{ product._id }}" class="badge badge-{{ status if status != 'nominal' else 'success' }}">
+                                {{ 'Out of Stock' if status == 'danger' else ('Low Stock' if status == 'warning' else 'Nominal') }}
+                            </span>
+                        </td>
+                        <td class="p-5">
+                            <div class="flex items-center gap-4">
+                                <button class="adjust-btn p-1.5 rounded bg-white/5 border border-white/10 text-text-muted hover:text-danger flex items-center justify-center transition-all" data-id="{{ product._id }}" data-delta="-1">
+                                    <i data-lucide="minus" class="w-3 h-3"></i>
+                                </button>
+                                <span id="qty-{{ product._id }}" class="text-sm font-mono font-bold text-white w-8 text-center transition-all duration-300">{{ product.quantity_on_hand }}</span>
+                                <button class="adjust-btn p-1.5 rounded bg-white/5 border border-white/10 text-text-muted hover:text-accent flex items-center justify-center transition-all" data-id="{{ product._id }}" data-delta="1">
+                                    <i data-lucide="plus" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="p-5">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-mono text-white/90">${{ "{:,.2f}".format(product.selling_price or 0) }}</span>
+                                <span class="text-[0.6rem] text-text-muted uppercase tracking-widest font-bold">Base Unit</span>
+                            </div>
+                        </td>
+                        <td class="p-5">
+                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a href="/products/{{ product._id }}/edit" class="p-2 rounded-lg hover:bg-primary/20 text-text-muted hover:text-primary transition-all">
+                                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                </a>
+                                <button class="p-2 rounded-lg hover:bg-danger/20 text-text-muted hover:text-danger transition-all" onclick="deleteProduct('{{ product._id }}')">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    {% endfor %}
+                    {% if not products %}
+                    <tr>
+                        <td colspan="6" class="p-20 text-center">
+                            <div class="flex flex-col items-center justify-center opacity-40">
+                                <i data-lucide="package-search" class="w-12 h-12 mb-4"></i>
+                                <h4 class="text-white font-bold mb-1">Matrix Empty</h4>
+                                <p class="text-xs text-text-secondary">No assets detected in the current node.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
-{% else %}
-    <div class="bg-white p-8 rounded-lg shadow text-center">
-        <p class="text-gray-500">No products yet. <a href="/products/create" class="text-blue-600 hover:underline">Create one</a></p>
+</div>
+
+<!-- Bulk Actions Floating Bar -->
+<div id="bulk-actions-bar" class="fixed bottom-10 left-1/2 -translate-x-1/2 glass-card px-8 py-4 rounded-full border border-primary/50 flex items-center gap-8 shadow-[0_0_50px_rgba(59,130,246,0.3)] transition-all duration-500 translate-y-20 opacity-0 z-[50]">
+    <div class="flex items-center gap-3 pr-8 border-r border-white/10">
+        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold" id="selected-count">0</div>
+        <span class="text-[0.65rem] font-bold text-white uppercase tracking-widest">Assets Targeted</span>
     </div>
-{% endif %}
+    
+    <div class="flex items-center gap-4">
+        <button class="text-xs font-bold text-white/60 hover:text-white flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all">
+            <i data-lucide="tag" class="w-4 h-4"></i>
+            Update Category
+        </button>
+        <button class="text-xs font-bold text-white/60 hover:text-white flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all">
+            <i data-lucide="archive" class="w-4 h-4"></i>
+            Bulk Archive
+        </button>
+        <button class="text-xs font-bold text-danger flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-danger/10 transition-all">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            Scrap Selected
+        </button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/products.js') }}"></script>
 {% endblock %}

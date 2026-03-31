@@ -21,9 +21,9 @@ def list_products():
     products = Product.list_by_org(g.db, org_id)
     return render_template("products/list.html", products=products)
 
-@products_bp.route("/create", methods=["GET", "POST"])
+@products_bp.route("/new", methods=["GET", "POST"])
 @login_required
-def create():
+def new():
     if request.method == "POST":
         org_id = session["organization_id"]
         name = request.form.get("name", "").strip()
@@ -100,6 +100,11 @@ def adjust_quantity(product_id):
         
         new_qty = max(0, int(product.get("quantity_on_hand", 0)) + delta)
         Product.update(g.db, product_id, org_id, quantity_on_hand=new_qty)
-        return jsonify({"success": True, "product_name": product.get("name"), "new_qty": new_qty})
+        return jsonify({
+            "success": True, 
+            "name": product.get("name"), 
+            "new_quantity": new_qty,
+            "threshold": product.get("low_stock_threshold", 5)
+        })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400

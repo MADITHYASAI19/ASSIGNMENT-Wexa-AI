@@ -1,19 +1,177 @@
 {% extends "base.html" %}
 
-{% block title %}Settings{% endblock %}
+{% block title %}System Configuration{% endblock %}
+{% block header_title %}Preferences & Meta Matrix{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-    <h1 class="text-2xl font-bold mb-6">Organization Settings</h1>
-    
-    <form method="POST" action="/settings/" class="space-y-4">
-        <div>
-            <label class="block text-sm font-medium text-gray-700">Default Low Stock Threshold</label>
-            <p class="text-xs text-gray-500 mb-2">Items with quantity below this number will be highlighted on the dashboard.</p>
-            <input type="number" name="threshold" value="{{ threshold }}" class="w-full md:w-1/3 px-3 py-2 border border-gray-300 rounded" required>
+<div class="max-w-5xl mx-auto animate-fade">
+    <div class="mb-10">
+        <h2 class="text-3xl font-display font-bold text-white mb-2">System Config</h2>
+        <p class="text-xs text-text-secondary font-mono tracking-widest uppercase">Global Variable Modulation</p>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Sidebar Tabs -->
+        <div class="w-full lg:w-64 space-y-2">
+            <button onclick="UI.switchTab('general')" class="tab-btn active w-full" id="tab-btn-general">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+                General Identity
+            </button>
+            <button onclick="UI.switchTab('visual')" class="tab-btn w-full" id="tab-btn-visual">
+                <i data-lucide="palette" class="w-4 h-4"></i>
+                Visual Matrix
+            </button>
+            <button onclick="UI.switchTab('security')" class="tab-btn w-full" id="tab-btn-security">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                Security Tiers
+            </button>
+            <button onclick="UI.switchTab('advanced')" class="tab-btn w-full" id="tab-btn-advanced">
+                <i data-lucide="terminal" class="w-4 h-4"></i>
+                Neural Advanced
+            </button>
         </div>
-        
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save Settings</button>
-    </form>
+
+        <!-- Main Settings Panes -->
+        <div class="flex-1 glass-card rounded-2xl overflow-hidden p-8 border border-white/5">
+            <!-- General Identity -->
+            <div id="pane-general" class="tab-pane active space-y-8 animate-fade">
+                <h3 class="text-lg font-display font-bold text-white flex items-center gap-2">
+                    <i data-lucide="building" class="w-5 h-5 text-primary"></i>
+                    Organization Node
+                </h3>
+                
+                <form method="POST" action="/settings/" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">Org Alias</label>
+                            <input type="text" value="Stark Industries" readonly class="input-field opacity-60 cursor-not-allowed">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">System Entropy Zone</label>
+                            <input type="text" value="Malibu, CA" class="input-field">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 pt-6 border-t border-white/5">
+                        <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">Global Stock Alert Pulse (Threshold)</label>
+                        <div class="flex items-center gap-6">
+                            <input type="range" name="global_threshold" min="1" max="50" value="{{ threshold }}" 
+                                class="flex-1 accent-primary h-1 bg-white/10 rounded-full appearance-none cursor-pointer" 
+                                oninput="document.getElementById('threshold-val').innerText = this.value">
+                            <span class="w-12 h-10 flex items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary font-mono font-bold" id="threshold-val">
+                                {{ threshold }}
+                            </span>
+                        </div>
+                        <p class="text-[0.65rem] text-text-muted italic">Determines when assets trigger a CRITICAL REPLENISHMENT PROTOCOL.</p>
+                    </div>
+
+                    <div class="pt-6">
+                        <button type="submit" class="btn btn-primary px-8">Save Configuration</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Visual Matrix -->
+            <div id="pane-visual" class="tab-pane hidden space-y-8 animate-fade">
+                <h3 class="text-lg font-display font-bold text-white flex items-center gap-2">
+                    <i data-lucide="monitor" class="w-5 h-5 text-secondary"></i>
+                    Interface Modulation
+                </h3>
+                
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-all">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-white">Dark Mode Matrix</span>
+                            <span class="text-[0.65rem] text-text-muted uppercase tracking-widest font-bold">Default System Sync</span>
+                        </div>
+                        <button onclick="document.getElementById('theme-toggle').click(); showToast('Matrix re-polarized.', 'info')" class="btn py-1.5 px-4 bg-white/5 text-xs font-bold uppercase tracking-widest border border-white/10">Cycle State</button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm font-bold text-white">Interface Scale</label>
+                            <span class="text-xs font-mono text-primary font-bold uppercase tracking-widest" id="scale-val">Optimal (100%)</span>
+                        </div>
+                        <input type="range" min="80" max="120" value="100" class="w-full accent-secondary h-1 bg-white/10 rounded-full appearance-none cursor-pointer" oninput="UI.updateScale(this.value)">
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 h-24">
+                        <button onclick="showToast('Primary Blue selected.', 'success')" class="h-full rounded-xl bg-[#3B82F6]/20 border-2 border-[#3B82F6] flex flex-col items-center justify-center gap-2 group">
+                            <div class="w-3 h-3 rounded-full bg-[#3B82F6] shadow-[0_0_10px_#3B82F6]"></div>
+                            <span class="text-[0.5rem] font-bold uppercase tracking-widest text-text-muted group-hover:text-white transition-colors">Cobalt Blue</span>
+                        </button>
+                        <button onclick="showToast('Secondary Emerald selected.', 'success')" class="h-full rounded-xl bg-[#10B981]/5 border border-white/10 hover:border-[#10B981] transition-all flex flex-col items-center justify-center gap-2 group">
+                            <div class="w-3 h-3 rounded-full bg-[#10B981]"></div>
+                            <span class="text-[0.5rem] font-bold uppercase tracking-widest text-text-muted group-hover:text-white transition-colors">Emerald Bio</span>
+                        </button>
+                        <button onclick="showToast('Tertiary Amber selected.', 'success')" class="h-full rounded-xl bg-[#F59E0B]/5 border border-white/10 hover:border-[#F59E0B] transition-all flex flex-col items-center justify-center gap-2 group">
+                            <div class="w-3 h-3 rounded-full bg-[#F59E0B]"></div>
+                            <span class="text-[0.5rem] font-bold uppercase tracking-widest text-text-muted group-hover:text-white transition-colors">Amber Warning</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Tiers -->
+            <div id="pane-security" class="tab-pane hidden space-y-8 animate-fade">
+                <div class="flex items-center gap-4 p-6 bg-danger/10 border border-danger/20 rounded-2xl mb-8">
+                    <i data-lucide="shield-alert" class="w-8 h-8 text-danger"></i>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-danger font-display tracking-wide uppercase">Critical Security Authorization Required</span>
+                        <span class="text-xs text-danger/80">Re-authenticating node in 24 hours.</span>
+                    </div>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">Active Neural Keys (API)</label>
+                        <div class="relative group">
+                            <input type="password" value="sk_stark_matrix_live_998273641xxyyzz" readonly class="input-field font-mono text-xs pr-20 opacity-40">
+                            <button onclick="showToast('Key copied to buffer.', 'success')" class="absolute right-4 top-1/2 -translate-y-1/2 text-primary hover:text-white text-[0.65rem] font-bold tracking-widest uppercase">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="pane-advanced" class="tab-pane hidden p-12 text-center flex flex-col items-center space-y-4 animate-fade">
+                <i data-lucide="lock" class="w-12 h-12 text-white/10"></i>
+                <div class="space-y-1">
+                    <h4 class="text-white font-bold mb-2">Neural Link Incomplete</h4>
+                    <p class="text-xs text-text-secondary max-w-xs mx-auto">This protocol tier requires Stark Industries v2.0 neural lace integration.</p>
+                </div>
+                <button disabled class="mt-4 px-6 py-2 rounded-lg bg-white/5 border border-white/5 text-[0.65rem] font-bold text-white/20 uppercase tracking-[0.2em] cursor-not-allowed">Access Blocked</button>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+.tab-btn {
+    @apply flex items-center gap-3 px-6 py-4 rounded-xl text-sm font-semibold transition-all duration-300 text-text-muted hover:text-white hover:bg-white/5;
+}
+.tab-btn.active {
+    @apply bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5;
+}
+</style>
+
+<script>
+const UI = {
+    switchTab: (tabId) => {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(`pane-${tabId}`).classList.remove('hidden');
+        document.getElementById(`tab-btn-${tabId}`).classList.add('active');
+        
+        showToast(`Switched matrix to ${tabId.toUpperCase()} node.`, 'info');
+    },
+    updateScale: (val) => {
+        const scaleVal = document.getElementById('scale-val');
+        if(val == 100) scaleVal.innerText = "Optimal (100%)";
+        else scaleVal.innerText = `${val}%`;
+        
+        document.documentElement.style.fontSize = `${val}%`;
+    }
+}
+</script>
 {% endblock %}

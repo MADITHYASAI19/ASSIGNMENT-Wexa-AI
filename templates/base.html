@@ -1,39 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockFlow {% block title %}{% endblock %}</title>
+    <title>StockFlow | {% block title %}Enterprise Inventory{% endblock %}</title>
+
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50">
-    <nav class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold text-blue-600">StockFlow</a>
-            <div class="space-x-4">
-                {% if session.user_id %}
-                    <a href="/products/" class="text-gray-700 hover:text-blue-600">Products</a>
-                    <a href="/" class="text-gray-700 hover:text-blue-600">Dashboard</a>
-                    <a href="/settings/" class="text-gray-700 hover:text-blue-600">Settings</a>
-                    <a href="/auth/logout" class="text-gray-700 hover:text-blue-600">Logout</a>
-                {% else %}
-                    <a href="/auth/login" class="text-gray-700 hover:text-blue-600">Login</a>
-                    <a href="/auth/signup" class="text-gray-700 hover:text-blue-600">Sign Up</a>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366F1',
+                        secondary: '#A855F7',
+                        accent: '#10B981',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        info: '#3B82F6',
+                        dark: '#0F172A',
+                        darker: '#020617',
+                        surface: '#1E293B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Sora', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Global Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <!-- Lucide Icons (Universal) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+    {% block head %}{% endblock %}
+</head>
+
+<body class="bg-dark text-white transition-colors duration-300 antialiased" id="main-body">
+
+    <!-- Mobile Overlay -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+
+    {% if not session.user_id %}
+        {% block public_content %}{% endblock %}
+    {% else %}
+    <!-- Layout Wrapper -->
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed lg:relative z-50 h-full w-72 bg-dark/95 backdrop-blur-md border-r border-white/10 flex flex-col transition-transform duration-300 -translate-x-full lg:translate-x-0">
+            <div class="p-6 h-20 flex items-center justify-between border-b border-white/10">
+                <a href="/" class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center font-display font-bold text-white">S</div>
+                    <span class="text-xl font-display font-bold text-white tracking-tight">StockFlow <span class="text-xs text-primary font-mono lowercase opacity-60">pro</span></span>
+                </a>
+                <button onclick="toggleSidebar()" class="lg:hidden text-white/60 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
+                <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    <i data-lucide="layout-grid"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/products/" class="nav-link {% if 'products' in request.path and 'new' not in request.path %}active{% endif %}">
+                    <i data-lucide="package"></i>
+                    <span>Asset Registry</span>
+                </a>
+                <a href="/products/new" class="nav-link {% if 'products/new' in request.path %}active{% endif %}">
+                    <i data-lucide="plus-circle"></i>
+                    <span>Add New Asset</span>
+                </a>
+                <a href="/analytics/" class="nav-link {% if 'analytics' in request.path %}active{% endif %}">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Intelligence Matrix</span>
+                </a>
+                <a href="/activity/" class="nav-link {% if 'activity' in request.path %}active{% endif %}">
+                    <i data-lucide="history"></i>
+                    <span>Activity Scan</span>
+                </a>
+                <div class="pt-6 pb-2 text-[0.65rem] font-bold text-white/30 uppercase tracking-[0.2em] px-4">System Configuration</div>
+                <a href="/settings/" class="nav-link {% if 'settings' in request.path %}active{% endif %}">
+                    <i data-lucide="settings"></i>
+                    <span>Preferences</span>
+                </a>
+                <a href="/auth/logout" class="nav-link text-red-400 hover:bg-red-500/10">
+                    <i data-lucide="log-out"></i>
+                    <span>Terminate Session</span>
+                </a>
+            </nav>
+
+            <!-- User Brief -->
+            <div class="p-6 border-t border-white/10 bg-black/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold font-display">
+                        {{ (current_user.email[0]|upper) if current_user else '?' }}
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-sm font-medium text-white truncate">{{ current_user.email if current_user else 'Unknown User' }}</span>
+                        <span class="text-[0.65rem] text-primary font-mono uppercase">Administrator</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 bg-darker/20">
+            <!-- Header -->
+            <header class="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-dark/40 backdrop-blur-sm z-30">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden text-white/60 hover:text-white p-2 hover:bg-white/5 rounded-lg">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <h2 class="text-white/80 font-display font-semibold tracking-wide">{% block header_title %}{% endblock %}</h2>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Search Trigger -->
+                    <button onclick="openGlobalSearch()" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/40 hover:border-primary/50 transition-all text-xs">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        <span>Search Protocols <kbd class="ml-2 px-1 rounded bg-white/10 font-mono">⌘K</kbd></span>
+                    </button>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-primary transition-all">
+                        <i data-lucide="sun" id="sun-icon"></i>
+                        <i data-lucide="moon" id="moon-icon" class="hidden"></i>
+                    </button>
+                    
+                    <div class="h-8 w-[1px] bg-white/10 mx-2"></div>
+                    <div class="relative group">
+                        <button class="w-8 h-8 rounded-full border border-primary/50 flex items-center justify-center font-bold text-xs bg-primary/20 text-primary">
+                            {{ (current_user.email[0]|upper) if current_user else '?' }}
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto relative">
+                <!-- Flash messages as toasts -->
+                <div id="toast-container" class="fixed top-24 right-8 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+
+                <div class="p-4 md:p-8">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Reusable Modal System -->
+    <div id="global-modal" class="fixed inset-0 z-[10000] flex items-center justify-center hidden p-4">
+        <div class="absolute inset-0 bg-dark/90 backdrop-blur-md opacity-0 modal-overlay transition-opacity duration-300"></div>
+        <div class="relative glass-card w-full max-w-lg rounded-2xl transform scale-90 opacity-0 modal-content transition-all duration-300 p-8">
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Global Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Pass flash messages to main.js toaster safely
+        window.flashes = window.flashes || [];
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        window.flashes = {{ messages | tojson | safe }};
+        {% endif %}
         {% endwith %}
-        
-        {% block content %}{% endblock %}
-    </main>
+    </script>
+    
+    {% block scripts %}{% endblock %}
 </body>
+
 </html>
+

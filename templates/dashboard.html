@@ -1,49 +1,192 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Command Center{% endblock %}
+{% block header_title %}Operational Overview{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+<div class="space-y-8 animate-fade">
+    <!-- Top Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Assets -->
+        <div class="glass-card p-6 rounded-2xl group hover:border-primary/50 transition-all duration-500">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+                    <i data-lucide="package" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[0.6rem] font-mono text-accent uppercase tracking-widest font-bold">+12% vs LY</span>
+            </div>
+            <div class="space-y-1">
+                <h3 class="text-text-secondary text-xs font-bold uppercase tracking-widest">Total Assets</h3>
+                <p class="text-3xl font-display font-bold text-white tabular-nums counter" data-target="{{ stats.total_products }}">0</p>
+            </div>
+            <div class="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full w-[70%] animate-pulse"></div>
+            </div>
+        </div>
 
-<div class="grid grid-cols-2 gap-4 mb-8">
-    <div class="bg-white p-6 rounded-lg shadow">
-        <p class="text-gray-600 text-sm">Total Products</p>
-        <p class="text-4xl font-bold text-blue-600">{{ total_products }}</p>
+        <!-- Inventory Value -->
+        <div class="glass-card p-6 rounded-2xl group hover:border-secondary/50 transition-all duration-500">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-2 rounded-lg bg-secondary/10 text-secondary group-hover:scale-110 transition-transform">
+                    <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[0.6rem] font-mono text-accent uppercase tracking-widest font-bold">NOMINAL</span>
+            </div>
+            <div class="space-y-1">
+                <h3 class="text-text-secondary text-xs font-bold uppercase tracking-widest">Total Valuation</h3>
+                <p class="text-3xl font-display font-bold text-white tabular-nums counter" data-target="{{ stats.total_value }}">0</p>
+            </div>
+            <div class="mt-4 flex gap-1 items-end h-6">
+                <div class="w-1 bg-secondary/40 h-[40%] rounded-t-sm"></div>
+                <div class="w-1 bg-secondary/60 h-[60%] rounded-t-sm"></div>
+                <div class="w-1 bg-secondary h-[90%] rounded-t-sm"></div>
+                <div class="w-1 bg-secondary/50 h-[50%] rounded-t-sm"></div>
+                <div class="w-1 bg-secondary/80 h-[100%] rounded-t-sm"></div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="glass-card p-6 rounded-2xl group hover:border-warning/50 transition-all duration-500">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-2 rounded-lg bg-warning/10 text-warning group-hover:animate-bounce">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[0.6rem] font-mono text-warning uppercase tracking-widest font-bold">CRITICAL</span>
+            </div>
+            <div class="space-y-1">
+                <h3 class="text-text-secondary text-xs font-bold uppercase tracking-widest">Low Stock Capacity</h3>
+                <p class="text-3xl font-display font-bold text-white tabular-nums counter" data-target="{{ stats.low_stock_count }}">0</p>
+            </div>
+            <p class="mt-4 text-[0.65rem] text-text-muted font-medium italic">Requires replenishment protocol.</p>
+        </div>
+
+        <!-- System Latency -->
+        <div class="glass-card p-6 rounded-2xl group hover:border-accent/50 transition-all duration-500">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-2 rounded-lg bg-accent/10 text-accent">
+                    <i data-lucide="zap" class="w-5 h-5"></i>
+                </div>
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+            </div>
+            <div class="space-y-1">
+                <h3 class="text-text-secondary text-xs font-bold uppercase tracking-widest">Sync Latency</h3>
+                <p class="text-3xl font-display font-bold text-white tabular-nums">24<span class="text-lg opacity-40">ms</span></p>
+            </div>
+            <div class="mt-4 text-[0.65rem] font-mono text-accent uppercase tracking-widest font-bold">Real-time Node: Online</div>
+        </div>
     </div>
-    <div class="bg-white p-6 rounded-lg shadow">
-        <p class="text-gray-600 text-sm">Total Inventory</p>
-        <p class="text-4xl font-bold text-green-600">{{ total_inventory }}</p>
+
+    <!-- Main Grid: Alerts + Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Low Stock Protocols -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-display font-bold text-white flex items-center gap-2">
+                    <i data-lucide="shield-alert" class="w-5 h-5 text-warning"></i>
+                    Critical Requisitions Needed
+                </h3>
+                <a href="/products/" class="text-[0.65rem] font-bold text-primary uppercase tracking-widest hover:underline">View All Registry</a>
+            </div>
+
+            <div class="space-y-4">
+                {% if low_stock_products %}
+                    {% for product in low_stock_products %}
+                    <div class="glass-card p-4 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-text-muted font-display font-bold shadow-inner">
+                                {{ product.name[0]|upper }}
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-semibold text-white">{{ product.name }}</span>
+                                <span class="text-[0.65rem] text-text-muted uppercase font-mono tracking-tighter">ID: {{ product._id|string|truncate(12, True, '') }}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-8">
+                            <div class="text-right hidden sm:block">
+                                <div class="text-xs font-bold text-warning">{{ product.quantity_on_hand }} <span class="opacity-40">/ {{ product.low_stock_threshold }}</span></div>
+                                <div class="text-[0.6rem] text-text-muted uppercase tracking-widest">Available Units</div>
+                            </div>
+                            <a href="/products/{{ product._id }}/edit" class="p-2 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-primary hover:border-primary/50 transition-all">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="glass-card p-12 rounded-2xl flex flex-col items-center justify-center text-center">
+                        <i data-lucide="check-circle" class="w-12 h-12 text-accent mb-4 opacity-50"></i>
+                        <h4 class="text-white font-bold mb-1">Inventory Integrity: 100%</h4>
+                        <p class="text-xs text-text-secondary">No current replenishment protocols required.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Activity Feed Mini -->
+        <div class="space-y-6">
+            <h3 class="text-lg font-display font-bold text-white flex items-center gap-2">
+                <i data-lucide="activity" class="w-5 h-5 text-secondary"></i>
+                Neural Activity
+            </h3>
+            <div class="glass-card rounded-2xl overflow-hidden">
+                <div class="p-6 space-y-8 relative">
+                    <!-- Timeline Line -->
+                    <div class="absolute left-8 top-10 bottom-10 w-[1px] bg-white/5"></div>
+
+                    {% for activity in activities[:5] %}
+                    <div class="relative flex gap-4 pl-10 group cursor-default">
+                        <!-- Dot -->
+                        <div class="absolute left-[-2px] top-1 w-2 h-2 rounded-full bg-white/20 group-hover:bg-secondary transition-colors z-10"></div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[0.65rem] text-text-muted font-mono uppercase tracking-widest">{{ activity.timestamp.strftime('%H:%M:%S') }}</span>
+                            <p class="text-xs text-white/80 leading-relaxed">
+                                <span class="text-secondary font-bold">{{ activity.user_email.split('@')[0] }}</span> 
+                                {{ activity.action }} 
+                                <span class="text-white font-semibold">{{ activity.product_name }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="/activity/" class="block text-center py-4 text-[0.65rem] font-bold text-white/30 uppercase tracking-[0.2em] hover:bg-white/5 hover:text-white transition-all bg-black/20 border-t border-white/5">
+                    Enter Protocol Log
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
-<h2 class="text-2xl font-bold mb-4">Low Stock Items</h2>
+<script>
+// Data for the counters with proper formatting
+document.addEventListener('DOMContentLoaded', () => {
+    const counters = document.querySelectorAll('.counter');
+    counters.forEach(counter => {
+        const target = parseFloat(counter.getAttribute('data-target')) || 0;
+        const duration = 1500; // Animation duration in ms
+        const steps = 60;
+        const increment = target / steps;
+        let current = 0;
+        
+        const formatNumber = (num) => {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return num.toLocaleString();
+            return Math.floor(num).toString();
+        };
 
-{% if low_stock_items %}
-    <div class="overflow-x-auto bg-white rounded-lg shadow">
-        <table class="w-full">
-            <thead class="bg-gray-100 border-b">
-                <tr>
-                    <th class="px-4 py-3 text-left font-medium">Name</th>
-                    <th class="px-4 py-3 text-left font-medium">SKU</th>
-                    <th class="px-4 py-3 text-left font-medium">Qty</th>
-                    <th class="px-4 py-3 text-left font-medium">Threshold</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in low_stock_items %}
-                    <tr class="border-b bg-yellow-50 hover:bg-yellow-100">
-                        <td class="px-4 py-3">{{ item.name }}</td>
-                        <td class="px-4 py-3">{{ item.sku }}</td>
-                        <td class="px-4 py-3 font-bold text-red-600">{{ item.quantity_on_hand }}</td>
-                        <td class="px-4 py-3">{{ item.low_stock_threshold or "Default" }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-{% else %}
-    <div class="bg-white p-8 rounded-lg shadow text-center">
-        <p class="text-gray-500">All stock levels look good!</p>
-    </div>
-{% endif %}
+        const updateCount = () => {
+            current += increment;
+            if (current < target) {
+                counter.innerText = formatNumber(current);
+                setTimeout(updateCount, duration / steps);
+            } else {
+                counter.innerText = formatNumber(target);
+            }
+        };
+        updateCount();
+    });
+});
+</script>
 {% endblock %}

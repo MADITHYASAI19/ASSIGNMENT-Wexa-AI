@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center">
+    <div class="text-center">
+        <div class="relative mb-8">
+            <div class="text-9xl font-display font-bold text-white/10">500</div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i data-lucide="cpu" class="w-24 h-24 text-danger opacity-50"></i>
+            </div>
+        </div>
+        <h1 class="text-3xl font-display font-bold text-white mb-4">Neural System Failure</h1>
+        <p class="text-text-secondary mb-8 max-w-md mx-auto">An internal error has occurred within the StockFlow matrix. Our engineers have been notified and are working to restore full functionality.</p>
+        <div class="flex gap-4 justify-center">
+            <a href="/" class="btn btn-primary">
+                <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                Reinitialize Connection
+            </a>
+            <button onclick="location.reload()" class="btn bg-white/5 border border-white/10 text-white hover:bg-white/10">
+                <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i>
+                Retry Request
+            </button>
+        </div>
+        <p class="mt-8 text-xs text-text-muted font-mono">Error Code: INTERNAL_MATRIX_FAILURE</p>
+    </div>
+</div>
+{% endblock %}

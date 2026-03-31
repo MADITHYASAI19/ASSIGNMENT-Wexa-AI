@@ -1,53 +1,110 @@
 {% extends "base.html" %}
 
-{% block title %}{{ 'Edit' if edit else 'Add' }} Product{% endblock %}
+{% block title %}{{ 'Modify' if edit else 'Register' }} Asset Protocol{% endblock %}
+{% block header_title %}{{ 'Registry Modulation' if edit else 'New Asset Onboarding' }}{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">{{ 'Edit' if edit else 'Add' }} Product</h1>
-        <a href="/products/" class="text-gray-600 hover:underline">Back to List</a>
+<div class="max-w-4xl mx-auto animate-fade">
+    <div class="mb-8 flex items-center justify-between">
+        <div class="flex flex-col">
+            <h2 class="text-3xl font-display font-bold text-white mb-2">{{ 'Edit Asset' if edit else 'Create Asset' }}</h2>
+            <p class="text-xs text-text-secondary font-mono tracking-widest uppercase">System Reference: {{ product._id|string if product else 'PENDING-ID' }}</p>
+        </div>
+        <a href="/products/" class="btn bg-white/5 border border-white/10 text-white/40 hover:text-white transition-all">
+            <i data-lucide="chevron-left" class="w-4 h-4 mr-2"></i>
+            Abort Registry
+        </a>
     </div>
-    
-    {% if errors %}
-        {% for error in errors %}
-            <div class="bg-red-100 text-red-800 p-2 rounded mb-4 text-sm">{{ error }}</div>
-        {% endfor %}
-    {% endif %}
-    
-    <form method="POST" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Product Name</label>
-                <input type="text" name="name" value="{{ product.name if product else '' }}" class="w-full px-3 py-2 border border-gray-300 rounded" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">SKU</label>
-                <input type="text" name="sku" value="{{ product.sku if product else '' }}" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50" {{ 'readonly' if edit else 'required' }}>
-                {% if edit %}<p class="text-xs text-gray-500 mt-1">SKU cannot be changed.</p>{% endif %}
+
+    <form method="POST" action="{{ url_for('products.edit', product_id=product._id) if edit else url_for('products.new') }}" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Configuration -->
+        <div class="lg:col-span-2 glass-card p-8 rounded-2xl space-y-8">
+            <div class="space-y-6">
+                <h3 class="text-sm font-display font-bold text-primary uppercase tracking-[0.2em] pb-4 border-b border-white/5">Metadata Protocol</h3>
+                
+                <div class="space-y-2 group">
+                    <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">Asset Nomenclature</label>
+                    <input type="text" name="name" id="p-name" 
+                        class="input-field py-4 text-lg font-display font-medium text-white" 
+                        placeholder="e.g. Arc Reactor Core v4.2" 
+                        value="{{ product.name if product else '' }}" required>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">Category Classification</label>
+                        <select name="category" class="input-field bg-darker/60 backdrop-blur-xl">
+                            <option value="Electronics" {{ 'selected' if product and product.category == 'Electronics' else '' }}>Electronics / AI</option>
+                            <option value="Raw Materials" {{ 'selected' if product and product.category == 'Raw Materials' else '' }}>Raw Materials / Vibranium</option>
+                            <option value="Armory" {{ 'selected' if product and product.category == 'Armory' else '' }}>Armory / Suit Hardware</option>
+                            <option value="Lab Equipment" {{ 'selected' if product and product.category == 'Lab Equipment' else '' }}>Lab Equipment</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">Specifications &amp; Internal Log</label>
+                    <textarea name="description" rows="5" class="input-field bg-white/5 resize-none" placeholder="Enter technical specifications or asset description...">{{ product.description if product else '' }}</textarea>
+                </div>
             </div>
         </div>
-        
-        <div class="grid grid-cols-3 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Quantity on Hand</label>
-                <input type="number" name="quantity" value="{{ product.quantity_on_hand if product else '0' }}" class="w-full px-3 py-2 border border-gray-300 rounded" required>
+
+        <!-- Inventory Metrics -->
+        <div class="space-y-8">
+            <div class="glass-card p-8 rounded-2xl space-y-6">
+                <h3 class="text-sm font-display font-bold text-secondary uppercase tracking-[0.2em] pb-4 border-b border-white/5">Volume Controls</h3>
+                
+                <div class="space-y-2">
+                    <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">Initial Capacity</label>
+                    <div class="relative">
+                        <i data-lucide="hash" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
+                        <input type="number" name="quantity" class="input-field pl-12 font-mono" value="{{ product.quantity_on_hand if product else 0 }}" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">Critical Threshold</label>
+                    <div class="relative">
+                        <i data-lucide="alert-triangle" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
+                        <input type="number" name="low_stock_threshold" class="input-field pl-12 font-mono" value="{{ product.low_stock_threshold if product else 5 }}" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[0.65rem] font-bold text-text-muted uppercase tracking-[0.1em] ml-1">Unit Valuation ($)</label>
+                    <div class="relative">
+                        <i data-lucide="dollar-sign" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"></i>
+                        <input type="number" step="0.01" name="selling_price" class="input-field pl-12 font-mono" value="{{ product.selling_price if product else 0.00 }}" required>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Selling Price ($)</label>
-                <input type="number" step="0.01" name="selling_price" value="{{ product.selling_price if product and product.selling_price else '' }}" class="w-full px-3 py-2 border border-gray-300 rounded">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Low Stock Threshold</label>
-                <input type="number" name="low_stock_threshold" value="{{ product.low_stock_threshold if product and product.low_stock_threshold else '' }}" placeholder="Org Default" class="w-full px-3 py-2 border border-gray-300 rounded">
-            </div>
-        </div>
-        
-        <div class="pt-4 border-t">
-            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                {{ 'Save Changes' if edit else 'Create Product' }}
+
+            <button type="submit" class="btn btn-primary w-full py-5 text-sm tracking-[0.3em] font-bold shadow-[0_0_40px_rgba(99,102,241,0.3)]">
+                {{ 'UPDATE PROTOCOL' if edit else 'COMPLETE REGISTRY' }}
             </button>
+            
+            <p class="text-[0.6rem] text-center text-text-muted uppercase font-bold tracking-widest leading-relaxed">
+                CAUTION: Registry modulation is permanent. <br> Verify asset checksum before submission.
+            </p>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Real-time name display synchronization
+    const nameInput = document.getElementById('p-name');
+    const headerTitle = document.querySelector('h2');
+    
+    {% if not edit %}
+    nameInput.addEventListener('input', (e) => {
+        if (e.target.value) {
+            headerTitle.innerText = "Register: " + e.target.value;
+        } else {
+            headerTitle.innerText = "Create Asset";
+        }
+    });
+    {% endif %}
+</script>
 {% endblock %}
